@@ -371,7 +371,6 @@
         "taxCalculation": "Calcul des Prix et Taxes",
         "printInvoice": "Imprimer Facture",
         "invoiceTitle": "Facture",
-        "dueDate": "Date d'échéance",
         "amountInWords": "Arrêté la présente facture à la somme de :",
         "saveFailed": "Échec de l'enregistrement. Réessayez.",
         "dateRequired": "La date de transaction est obligatoire",
@@ -519,6 +518,8 @@
         "confirmDelete": "Supprimer cette route ?",
         "confirmDeleteDesc": "Cette action est irréversible.",
         "dateRequired": "La date est requise",
-        "saveFailed": "Erreur lors de la sauvegarde. Veuillez réessayer."
+        "saveFailed": "Erreur lors de la sauvegarde. Veuillez réessayer.",
+        "paid": "Payé",
+        "unpaid": "Non payé"
     }
 }

@@ -17,6 +17,7 @@ const fmt = (val) => {
 };
 
 const today = () => new Date().toISOString().split('T')[0];
+const currentYearStart = () => `${new Date().getFullYear()}-01-01`;
 
 /* ─── Company Modal ─────────────────────────────────────────────── */
 function CompanyModal({ onClose, onSave, editData }) {
@@ -449,7 +450,7 @@ export default function Purchases() {
 
     // ── Filter state ──
     const [search, setSearch] = useState('');
-    const [dateFrom, setDateFrom] = useState('');
+    const [dateFrom, setDateFrom] = useState(currentYearStart());
     const [dateTo, setDateTo] = useState('');
     const [sortOrder, setSortOrder] = useState('desc');
     const [paymentStatus, setPaymentStatus] = useState(''); // '' | 'paid' | 'pending' | 'unpaid'
@@ -474,9 +475,14 @@ export default function Purchases() {
         });
     }, [purchases, search, dateFrom, dateTo, sortOrder, paymentStatus]);
 
-    const hasFilters = search || dateFrom || dateTo || sortOrder !== 'desc' || paymentStatus;
-    const filterCount = (dateFrom ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (paymentStatus ? 1 : 0);
-    const clearFilters = () => { setSearch(''); setDateFrom(''); setDateTo(''); setSortOrder('desc'); setPaymentStatus(''); setShowFilterPanel(false); };
+    const defaultFrom = currentYearStart();
+    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || paymentStatus;
+    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (paymentStatus ? 1 : 0);
+    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setPaymentStatus(''); setShowFilterPanel(false); };
+
+    const totalPriceHT = filteredPurchases.reduce((sum, p) => sum + (Number(p.price_ht) || 0), 0);
+    const totalTVA = filteredPurchases.reduce((sum, p) => sum + (Number(p.tva_20) || 0), 0);
+    const totalTTC = filteredPurchases.reduce((sum, p) => sum + (Number(p.total_ttc) || 0), 0);
 
     const { profile } = useAuth();
     const isComptable = profile?.role === 'comptable';
@@ -592,6 +598,7 @@ export default function Purchases() {
   table{width:100%;border-collapse:collapse}
   thead{background:#eff6ff}th{padding:6px 8px;font-size:8px;font-weight:700;text-transform:uppercase;color:#1e40af;border-bottom:2px solid #bfdbfe;text-align:left}
   td{padding:5px 8px;border-bottom:1px solid #f0f0f0;font-size:9px}tr:nth-child(even) td{background:#f9fafb}
+  tfoot td{font-weight:700;background:#eff6ff;border-top:2px solid #bfdbfe}
   .footer{margin-top:10px;font-size:8px;color:#aaa;text-align:right}
 </style></head><body>
   <div class="header">
@@ -606,6 +613,13 @@ export default function Purchases() {
       <th style="text-align:right">${t('purchases.totalTTC')}</th><th>${t('purchases.paymentDate')}</th>
     </tr></thead>
     <tbody>${rows}</tbody>
+    <tfoot><tr>
+      <td colspan="6" style="font-size:8px;text-transform:uppercase;padding:6px 8px"><strong>TOTAL (${filteredPurchases.length} entrée(s))</strong></td>
+      <td style="text-align:right;font-family:monospace;padding:6px 8px;font-size:9px">${Number(totalPriceHT).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="text-align:right;font-family:monospace;padding:6px 8px;font-size:9px;color:#ea580c">${Number(totalTVA).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="text-align:right;font-family:monospace;padding:6px 8px;font-size:9px;color:#2563eb">${Number(totalTTC).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td></td>
+    </tr></tfoot>
   </table>
   <p class="footer">Meca Wood · ${t('purchases.title')} · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
   <script>window.onload=()=>{window.print()}<\/script>
@@ -721,6 +735,22 @@ export default function Purchases() {
             {/* ── Purchases Tab ── */}
             {activeTab === 'purchases' && (
                 <div className="space-y-3">
+                    {/* Totals Quick Stats */}
+                    <div className="grid grid-cols-3 gap-3">
+                        <div className="rounded-xl border p-4 bg-gray-50 border-gray-200">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">{t('purchases.priceHT')}</p>
+                            <p className="text-xl font-bold font-mono text-gray-800">{fmt(totalPriceHT)} <span className="text-sm font-normal text-gray-400">MAD</span></p>
+                            <p className="text-xs text-gray-400 mt-0.5">{filteredPurchases.length} achat(s)</p>
+                        </div>
+                        <div className="rounded-xl border p-4 bg-orange-50 border-orange-100">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-orange-600 mb-1">{t('purchases.tva20')}</p>
+                            <p className="text-xl font-bold font-mono text-orange-700">{fmt(totalTVA)} <span className="text-sm font-normal text-orange-400">MAD</span></p>
+                        </div>
+                        <div className="rounded-xl border p-4 bg-blue-50 border-blue-100">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 mb-1">Total TTC</p>
+                            <p className="text-xl font-bold font-mono text-blue-700">{fmt(totalTTC)} <span className="text-sm font-normal text-blue-400">MAD</span></p>
+                        </div>
+                    </div>
                     {/* Search + Filter bar */}
                     <div className="flex flex-col sm:flex-row gap-2">
                         {/* Search */}

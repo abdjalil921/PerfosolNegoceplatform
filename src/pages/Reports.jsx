@@ -29,7 +29,10 @@ export default function Reports() {
     const { items, loading: itemsLoading } = useItems();
     const { transactions, loading: txLoading } = useTransactions();
     const [categoryFilter, setCategoryFilter] = useState('all');
-    const [dateRange, setDateRange] = useState(null);
+    const [dateRange, setDateRange] = useState(() => {
+        const year = new Date().getFullYear();
+        return { from: `${year}-01-01`, to: `${year}-12-31` };
+    });
 
     const loading = itemsLoading || txLoading;
 

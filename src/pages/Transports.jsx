@@ -13,6 +13,7 @@ const fmt = (val) => {
     return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 const today = () => new Date().toISOString().split('T')[0];
+const currentYearStart = () => `${new Date().getFullYear()}-01-01`;
 
 /* ── Modal ─────────────────────────────────────────────────────────── */
 function RouteModal({ onClose, onSave, editData }) {
@@ -26,7 +27,9 @@ function RouteModal({ onClose, onSave, editData }) {
         arrival: editData?.arrival || '',
         notes: editData?.notes || '',
         gas: editData?.gas != null ? editData.gas : '',
+        gas_paid: editData?.gas_paid ?? false,
         rental_price: editData?.rental_price != null ? editData.rental_price : '',
+        rental_paid: editData?.rental_paid ?? false,
     });
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -44,7 +47,9 @@ function RouteModal({ onClose, onSave, editData }) {
             arrival: form.arrival.trim(),
             notes: form.notes.trim() || null,
             gas: parseFloat(form.gas) || 0,
+            gas_paid: form.gas_paid,
             rental_price: parseFloat(form.rental_price) || 0,
+            rental_paid: form.rental_paid,
         });
         setSaving(false);
         if (result.success) onClose();
@@ -123,7 +128,14 @@ function RouteModal({ onClose, onSave, editData }) {
                             <input type="number" min="0" step="0.01" value={form.gas}
                                 onChange={e => set('gas', e.target.value)}
                                 placeholder="0.00"
-                                className="w-full px-3 py-2 border border-cyan-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-400 font-mono font-semibold text-cyan-700" />
+                                className="w-full px-3 py-2 border border-cyan-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-400 font-mono font-semibold text-cyan-700 mb-2" />
+                            <select
+                                value={form.gas_paid ? 'true' : 'false'}
+                                onChange={e => set('gas_paid', e.target.value === 'true')}
+                                className={`w-full px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${form.gas_paid ? 'bg-green-50 border-green-300 text-green-700' : 'bg-red-50 border-red-300 text-red-700'}`}>
+                                <option value="false">{t('transports.unpaid')}</option>
+                                <option value="true">{t('transports.paid')}</option>
+                            </select>
                         </div>
                         <div className="rounded-xl border border-violet-100 bg-violet-50/60 p-3">
                             <label className="block text-xs font-semibold text-violet-700 mb-1.5">
@@ -132,7 +144,14 @@ function RouteModal({ onClose, onSave, editData }) {
                             <input type="number" min="0" step="0.01" value={form.rental_price}
                                 onChange={e => set('rental_price', e.target.value)}
                                 placeholder="0.00"
-                                className="w-full px-3 py-2 border border-violet-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-violet-400/40 focus:border-violet-400 font-mono font-semibold text-violet-700" />
+                                className="w-full px-3 py-2 border border-violet-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-violet-400/40 focus:border-violet-400 font-mono font-semibold text-violet-700 mb-2" />
+                            <select
+                                value={form.rental_paid ? 'true' : 'false'}
+                                onChange={e => set('rental_paid', e.target.value === 'true')}
+                                className={`w-full px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${form.rental_paid ? 'bg-green-50 border-green-300 text-green-700' : 'bg-red-50 border-red-300 text-red-700'}`}>
+                                <option value="false">{t('transports.unpaid')}</option>
+                                <option value="true">{t('transports.paid')}</option>
+                            </select>
                         </div>
                     </div>
 
@@ -163,7 +182,7 @@ export default function Transports() {
     const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
     const [search, setSearch] = useState('');
-    const [dateFrom, setDateFrom] = useState('');
+    const [dateFrom, setDateFrom] = useState(currentYearStart());
     const [dateTo, setDateTo] = useState('');
     const [sortOrder, setSortOrder] = useState('desc');
     const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -187,9 +206,10 @@ export default function Transports() {
             });
     }, [routes, search, dateFrom, dateTo, sortOrder]);
 
-    const hasFilters = search || dateFrom || dateTo || sortOrder !== 'desc';
-    const filterCount = (dateFrom ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0);
-    const clearFilters = () => { setSearch(''); setDateFrom(''); setDateTo(''); setSortOrder('desc'); setShowFilterPanel(false); };
+    const defaultFrom = currentYearStart();
+    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc';
+    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0);
+    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setShowFilterPanel(false); };
 
     const totalGas = filtered.reduce((s, r) => s + (Number(r.gas) || 0), 0);
     const totalRental = filtered.reduce((s, r) => s + (Number(r.rental_price) || 0), 0);
@@ -434,8 +454,22 @@ export default function Transports() {
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500 hidden md:table-cell max-w-[180px] truncate">{r.notes || ''}</td>
-                                        <td className="px-4 py-3 text-sm text-right font-mono font-semibold text-cyan-700 whitespace-nowrap">{fmt(r.gas)}</td>
-                                        <td className="px-4 py-3 text-sm text-right font-mono font-semibold text-violet-700 whitespace-nowrap">{fmt(r.rental_price)}</td>
+                                        <td className="px-4 py-3 text-sm text-right whitespace-nowrap">
+                                            <div className="flex flex-col items-end gap-0.5">
+                                                <span className="font-mono font-semibold text-cyan-700">{fmt(r.gas)}</span>
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${r.gas_paid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {r.gas_paid ? t('transports.paid') : t('transports.unpaid')}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3 text-sm text-right whitespace-nowrap">
+                                            <div className="flex flex-col items-end gap-0.5">
+                                                <span className="font-mono font-semibold text-violet-700">{fmt(r.rental_price)}</span>
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${r.rental_paid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {r.rental_paid ? t('transports.paid') : t('transports.unpaid')}
+                                                </span>
+                                            </div>
+                                        </td>
                                         <td className="px-4 py-3 text-center">
                                             <div className="flex items-center justify-center gap-1">
                                                 <button onClick={() => setEditingRoute(r)}

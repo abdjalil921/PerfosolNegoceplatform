@@ -356,7 +356,6 @@
         "bcNumberPlaceholder": "Ex: 26000546",
         "blNumber": "Delivery Note (BL N\u00b0)",
         "blNumberPlaceholder": "Ex: 0417 / 0418",
-        "dueDate": "Due Date",
         "itemSold": "Item Sold",
         "itemSoldPlaceholder": "Ex: Wood planks, furniture...",
         "unitPrice": "Unit Price HT",
@@ -519,6 +518,8 @@
         "confirmDelete": "Delete this route?",
         "confirmDeleteDesc": "This action cannot be undone.",
         "dateRequired": "Date is required",
-        "saveFailed": "Failed to save. Please try again."
+        "saveFailed": "Failed to save. Please try again.",
+        "paid": "Paid",
+        "unpaid": "Unpaid"
     }
 }

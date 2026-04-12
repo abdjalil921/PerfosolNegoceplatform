@@ -17,6 +17,7 @@ const fmt = (val) => {
 };
 
 const today = () => new Date().toISOString().split('T')[0];
+const currentYearStart = () => `${new Date().getFullYear()}-01-01`;
 
 /* Convert a number to French words (MAD) */
 function numberToWordsFr(n) {
@@ -202,7 +203,7 @@ function ItemCombobox({ items, value, itemId, onChange, onSelect, placeholder, i
 }
 
 /* ─── Sale Modal (Add & Edit) ────────────────────────────────────── */
-function SaleModal({ companies, items, onClose, onSave, editData }) {
+function SaleModal({ companies, items, onClose, onSave, editData, suggestedReceiptNumber }) {
     const { t } = useTranslation();
     const isEdit = Boolean(editData);
 
@@ -221,7 +222,7 @@ function SaleModal({ companies, items, onClose, onSave, editData }) {
         company_address: editData?.company_address || '',
         if_tax: editData?.if_tax || '',
         ice: editData?.ice || '',
-        receipt_number: editData?.receipt_number || '',
+        receipt_number: editData?.receipt_number || suggestedReceiptNumber || '',
         bc_number: editData?.bc_number || '',
         bl_number: editData?.bl_number || '',
         due_date: editData?.due_date || '',
@@ -518,7 +519,7 @@ export default function Sales() {
 
     // ── Filters ──
     const [search, setSearch] = useState('');
-    const [dateFrom, setDateFrom] = useState('');
+    const [dateFrom, setDateFrom] = useState(currentYearStart());
     const [dateTo, setDateTo] = useState('');
     const [sortOrder, setSortOrder] = useState('desc');
     const [sortField, setSortField] = useState('date');
@@ -549,9 +550,29 @@ export default function Sales() {
         });
     }, [sales, search, dateFrom, dateTo, sortOrder, sortField, paymentStatus]);
 
-    const hasFilters = search || dateFrom || dateTo || sortOrder !== 'desc' || sortField !== 'date' || paymentStatus;
-    const filterCount = (dateFrom ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (sortField !== 'date' ? 1 : 0) + (paymentStatus ? 1 : 0);
-    const clearFilters = () => { setSearch(''); setDateFrom(''); setDateTo(''); setSortOrder('desc'); setSortField('date'); setPaymentStatus(''); setShowFilterPanel(false); };
+    const defaultFrom = currentYearStart();
+    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || sortField !== 'date' || paymentStatus;
+    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (sortField !== 'date' ? 1 : 0) + (paymentStatus ? 1 : 0);
+    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setSortField('date'); setPaymentStatus(''); setShowFilterPanel(false); };
+
+    const totalPriceHT = filteredSales.reduce((sum, s) => sum + (Number(s.price_ht) || 0), 0);
+    const totalTVA = filteredSales.reduce((sum, s) => sum + (Number(s.tva_20) || 0), 0);
+    const totalTTC = filteredSales.reduce((sum, s) => sum + (Number(s.total_ttc) || 0), 0);
+
+    /* ── Auto-increment Receipt Number ── */
+    const nextReceiptNumber = useMemo(() => {
+        const suffix = new Date().getFullYear().toString().slice(-2);
+        const pattern = new RegExp(`^(\\d+)-${suffix}$`);
+        let maxNum = 0;
+        for (const s of sales) {
+            const match = (s.receipt_number || '').match(pattern);
+            if (match) {
+                const num = parseInt(match[1], 10);
+                if (num > maxNum) maxNum = num;
+            }
+        }
+        return `${String(maxNum + 1).padStart(3, '0')}-${suffix}`;
+    }, [sales]);
 
     const { profile } = useAuth();
     const isComptable = profile?.role === 'comptable';
@@ -631,6 +652,13 @@ export default function Sales() {
       <th style="text-align:right">${t('sales.totalTTC')}</th><th>${t('sales.paymentDate')}</th>
     </tr></thead>
     <tbody>${rows}</tbody>
+    <tfoot><tr>
+      <td colspan="6" style="font-size:8px;text-transform:uppercase;padding:6px 8px"><strong>TOTAL (${filteredSales.length} entrée(s))</strong></td>
+      <td style="text-align:right;font-family:monospace;padding:6px 8px;font-size:9px">${Number(totalPriceHT).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="text-align:right;font-family:monospace;padding:6px 8px;font-size:9px;color:#ea580c">${Number(totalTVA).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="text-align:right;font-family:monospace;padding:6px 8px;font-size:9px;color:#059669">${Number(totalTTC).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td></td>
+    </tr></tfoot>
   </table>
   <p class="footer">Meca Wood · ${t('sales.title')} · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
   <script>window.onload=()=>{window.print()}<\/script>
@@ -780,7 +808,8 @@ export default function Sales() {
             )}
             {showSaleModal && (
                 <SaleModal companies={clients} items={items} onClose={() => setShowSaleModal(false)}
-                    onSave={(data) => addSale(data, profile?.id)} />
+                    onSave={(data) => addSale(data, profile?.id)}
+                    suggestedReceiptNumber={nextReceiptNumber} />
             )}
             {editingSale && (
                 <SaleModal companies={clients} items={items} editData={editingSale}
@@ -853,6 +882,22 @@ export default function Sales() {
             {/* ── Sales Tab ── */}
             {activeTab === 'sales' && (
                 <div className="space-y-3">
+                    {/* Totals Quick Stats */}
+                    <div className="grid grid-cols-3 gap-3">
+                        <div className="rounded-xl border p-4 bg-gray-50 border-gray-200">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">{t('sales.priceHT')}</p>
+                            <p className="text-xl font-bold font-mono text-gray-800">{fmt(totalPriceHT)} <span className="text-sm font-normal text-gray-400">MAD</span></p>
+                            <p className="text-xs text-gray-400 mt-0.5">{filteredSales.length} vente(s)</p>
+                        </div>
+                        <div className="rounded-xl border p-4 bg-orange-50 border-orange-100">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-orange-600 mb-1">{t('sales.tva20')}</p>
+                            <p className="text-xl font-bold font-mono text-orange-700">{fmt(totalTVA)} <span className="text-sm font-normal text-orange-400">MAD</span></p>
+                        </div>
+                        <div className="rounded-xl border p-4 bg-emerald-50 border-emerald-100">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600 mb-1">Total TTC</p>
+                            <p className="text-xl font-bold font-mono text-emerald-700">{fmt(totalTTC)} <span className="text-sm font-normal text-emerald-400">MAD</span></p>
+                        </div>
+                    </div>
                     {/* Filter bar */}
                     <div className="flex flex-col sm:flex-row gap-2">
                         <div className="relative flex-1">

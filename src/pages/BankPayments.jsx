@@ -15,6 +15,7 @@ const fmt = (val) => {
     return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 const today = () => new Date().toISOString().split('T')[0];
+const currentYearStart = () => `${new Date().getFullYear()}-01-01`;
 
 /* ─── Transaction Modal ─────────────────────────────────────────── */
 function TransactionModal({ onClose, onSave, editData }) {
@@ -151,7 +152,7 @@ export default function BankPayments() {
 
     // ── Filters ──
     const [search, setSearch] = useState('');
-    const [dateFrom, setDateFrom] = useState('');
+    const [dateFrom, setDateFrom] = useState(currentYearStart());
     const [dateTo, setDateTo] = useState('');
     const [sortOrder, setSortOrder] = useState('desc');
     const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -171,9 +172,10 @@ export default function BankPayments() {
         });
     }, [transactions, search, dateFrom, dateTo, sortOrder]);
 
-    const hasFilters = search || dateFrom || dateTo || sortOrder !== 'desc';
-    const filterCount = (dateFrom ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0);
-    const clearFilters = () => { setSearch(''); setDateFrom(''); setDateTo(''); setSortOrder('desc'); setShowFilterPanel(false); };
+    const defaultFrom = currentYearStart();
+    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc';
+    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0);
+    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setShowFilterPanel(false); };
 
     // ── Totals (all transactions — no paid/unpaid for bank) ──
     const totalEntrees = filtered.reduce((s, tx) => s + (Number(tx.entrees) || 0), 0);

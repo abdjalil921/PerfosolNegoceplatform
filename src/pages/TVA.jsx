@@ -16,6 +16,7 @@ const fmt = (val) => {
     return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 const today = () => new Date().toISOString().split('T')[0];
+const currentYearStart = () => `${new Date().getFullYear()}-01-01`;
 
 /* ─── TVA Modal ────────────────────────────────────────────────── */
 function TVAModal({ onClose, onSave, editData, clients, companies }) {
@@ -188,7 +189,7 @@ export default function TVA() {
 
     // ── Filters ──
     const [search, setSearch] = useState('');
-    const [dateFrom, setDateFrom] = useState('');
+    const [dateFrom, setDateFrom] = useState(currentYearStart());
     const [dateTo, setDateTo] = useState('');
     const [sortOrder, setSortOrder] = useState('desc');
     const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -218,9 +219,10 @@ export default function TVA() {
         applyFilters(transactions.filter(tx => tx.type === 'achat')),
         [transactions, search, dateFrom, dateTo, sortOrder]);
 
-    const hasFilters = search || dateFrom || dateTo || sortOrder !== 'desc';
-    const filterCount = (dateFrom ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0);
-    const clearFilters = () => { setSearch(''); setDateFrom(''); setDateTo(''); setSortOrder('desc'); setShowFilterPanel(false); };
+    const defaultFrom = currentYearStart();
+    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc';
+    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0);
+    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setShowFilterPanel(false); };
 
     const totalVente = venteItems.reduce((s, tx) => s + (Number(tx.amount) || 0), 0);
     const totalAchat = achatItems.reduce((s, tx) => s + (Number(tx.amount) || 0), 0);

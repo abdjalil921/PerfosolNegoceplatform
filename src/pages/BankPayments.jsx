@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import HScrollWrapper from '../components/ui/HScrollWrapper';
 import {
     Landmark, Plus, X, Trash2, Download, Printer,
     Loader2, AlertCircle, Pencil, Search,
@@ -495,7 +496,7 @@ export default function BankPayments() {
 
                     {/* Desktop Table */}
                     <div className="hidden sm:block bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                        <div className="overflow-x-auto">
+                        <HScrollWrapper>
                             <table className="min-w-full divide-y divide-gray-100">
                                 <thead className="bg-gray-50">
                                     <tr>
@@ -556,7 +557,7 @@ export default function BankPayments() {
                                     </tr>
                                 </tfoot>
                             </table>
-                        </div>
+                        </HScrollWrapper>
                     </div>
                 </>
             )}

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import HScrollWrapper from '../components/ui/HScrollWrapper';
 import {
     Truck, Plus, X, Trash2, Printer,
     Loader2, AlertCircle, Pencil, Search,
@@ -424,7 +425,7 @@ export default function Transports() {
                 </div>
             ) : (
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
+                    <HScrollWrapper>
                         <table className="min-w-full divide-y divide-gray-100">
                             <thead className="bg-gray-50">
                                 <tr>
@@ -496,7 +497,7 @@ export default function Transports() {
                                 </tr>
                             </tfoot>
                         </table>
-                    </div>
+                    </HScrollWrapper>
                 </div>
             )}
         </div>

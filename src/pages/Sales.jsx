@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import HScrollWrapper from '../components/ui/HScrollWrapper';
 import {
     TrendingUp, Plus, Building2, X, Trash2, Download, Printer,
     ChevronDown, Loader2, AlertCircle, Pencil, Search, SlidersHorizontal
@@ -1097,7 +1098,7 @@ export default function Sales() {
 
                             {/* Desktop table */}
                             <div className="hidden sm:block bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                                <div className="overflow-x-auto">
+                                <HScrollWrapper>
                                     <table className="min-w-full divide-y divide-gray-100">
                                         <thead className="bg-gray-50">
                                             <tr>
@@ -1167,7 +1168,7 @@ export default function Sales() {
                                             ))}
                                         </tbody>
                                     </table>
-                                </div>
+                                </HScrollWrapper>
                             </div>
                         </>
                     )}

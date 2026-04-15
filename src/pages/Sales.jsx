@@ -8,6 +8,7 @@ import {
 import { useClients } from '../hooks/useClients';
 import { useSales } from '../hooks/useSales';
 import { useAuth } from '../hooks/useAuth';
+import { useSettings } from '../hooks/useSettings';
 import { useItems } from '../hooks/useItems';
 import { fmtDate, getPaymentStatus } from '../lib/utils';
 
@@ -506,6 +507,8 @@ function SaleModal({ companies, items, onClose, onSave, editData, suggestedRecei
 /* ─── Main Page ─────────────────────────────────────────────────── */
 export default function Sales() {
     const { t } = useTranslation();
+    const { companyName } = useSettings();
+    const displayName = companyName || 'Meca Wood';
     const { clients, loading: clientsLoading, addClient, updateClient, deleteClient } = useClients();
     const { sales, loading: salesLoading, addSale, updateSale, deleteSale } = useSales();
     const { items } = useItems();
@@ -629,7 +632,7 @@ export default function Sales() {
                 <td>${fmtDate(s.payment_date)}</td>
             </tr>`).join('');
         const html = `<!DOCTYPE html>
-<html lang="fr"><head><meta charset="utf-8"/><title>Ventes – Meca Wood</title>
+<html lang="fr"><head><meta charset="utf-8"/><title>Ventes – ${displayName}</title>
 <style>
   @page{size:A4 landscape;margin:12mm}*{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Segoe UI',Arial,sans-serif;font-size:10px;color:#111}
@@ -642,7 +645,7 @@ export default function Sales() {
   .footer{margin-top:10px;font-size:8px;color:#aaa;text-align:right}
 </style></head><body>
   <div class="header">
-    <h1>${t('sales.title')} – Meca Wood</h1>
+    <h1>${t('sales.title')} – ${displayName}</h1>
     <p>${dateLabel} &nbsp;&middot;&nbsp; ${filteredSales.length} entrée(s)</p>
   </div>
   <table>
@@ -661,7 +664,7 @@ export default function Sales() {
       <td></td>
     </tr></tfoot>
   </table>
-  <p class="footer">Meca Wood · ${t('sales.title')} · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+  <p class="footer">${displayName} · ${t('sales.title')} · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
   <script>window.onload=()=>{window.print()}<\/script>
 </body></html>`;
         const win = window.open('', '_blank', 'width=1100,height=750');

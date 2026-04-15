@@ -7,6 +7,7 @@ import {
     ChevronDown, SlidersHorizontal, MapPin, Fuel
 } from 'lucide-react';
 import { useTransports } from '../hooks/useTransports';
+import { useSettings } from '../hooks/useSettings';
 import { fmtDate } from '../lib/utils';
 
 const fmt = (val) => {
@@ -176,6 +177,8 @@ function RouteModal({ onClose, onSave, editData }) {
 /* ── Main Page ──────────────────────────────────────────────────────── */
 export default function Transports() {
     const { t } = useTranslation();
+    const { companyName } = useSettings();
+    const displayName = companyName || 'Meca Wood';
     const { routes, loading, addRoute, updateRoute, deleteRoute } = useTransports();
 
     const [showModal, setShowModal] = useState(false);
@@ -228,7 +231,7 @@ export default function Transports() {
                 <td style="text-align:right;font-family:monospace">${fmt(r.rental_price)}</td>
             </tr>`).join('');
         const html = `<!DOCTYPE html>
-<html lang="fr"><head><meta charset="utf-8"/><title>Transports – Meca Wood</title>
+<html lang="fr"><head><meta charset="utf-8"/><title>Transports – ${displayName}</title>
 <style>
   @page{size:A4 landscape;margin:12mm}*{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Segoe UI',Arial,sans-serif;font-size:10px;color:#111}
@@ -241,7 +244,7 @@ export default function Transports() {
   .footer{margin-top:10px;font-size:8px;color:#aaa;text-align:right}
 </style></head><body>
   <div class="header">
-    <h1>${t('transports.title')} – Meca Wood</h1>
+    <h1>${t('transports.title')} – ${displayName}</h1>
     <p>${filtered.length} route(s) · ${hasFilters ? `${dateFrom || '…'} → ${dateTo || '…'}` : t('transports.title')}</p>
   </div>
   <table>
@@ -261,7 +264,7 @@ export default function Transports() {
       <td style="text-align:right">${fmt(totalRental)} MAD</td>
     </tr></tfoot>
   </table>
-  <p class="footer">Meca Wood · ${t('transports.title')} · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+  <p class="footer">${displayName} · ${t('transports.title')} · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
   <script>window.onload=()=>{window.print()}<\/script>
 </body></html>`;
         const win = window.open('', '_blank', 'width=1100,height=750');

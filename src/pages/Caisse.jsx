@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useCaisse } from '../hooks/useCaisse';
 import { useAuth } from '../hooks/useAuth';
+import { useSettings } from '../hooks/useSettings';
 import { fmtDate } from '../lib/utils';
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
@@ -170,6 +171,8 @@ function SummaryBox({ label, value, color, icon: Icon, subLabel }) {
 /* ─── Main Page ─────────────────────────────────────────────────── */
 export default function Caisse() {
     const { t } = useTranslation();
+    const { companyName } = useSettings();
+    const displayName = companyName || 'Meca Wood';
     const { transactions, loading, addTransaction, updateTransaction, deleteTransaction } = useCaisse();
 
     const [showModal, setShowModal] = useState(false);
@@ -249,7 +252,7 @@ export default function Caisse() {
         const html = `<!DOCTYPE html>
 <html lang="fr"><head>
 <meta charset="utf-8"/>
-<title>La Caisse – Meca Wood</title>
+<title>La Caisse – ${displayName}</title>
 <style>
   @page{size:A4 landscape;margin:15mm}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -279,7 +282,7 @@ export default function Caisse() {
 </style>
 </head><body>
   <div class="header">
-    <h1>La Caisse &ndash; Meca Wood</h1>
+    <h1>La Caisse &ndash; ${displayName}</h1>
     <p class="company">${t('caisse.subtitle')}</p>
     <p>${dateLabel} &nbsp;&middot;&nbsp; ${filtered.length} transaction(s)</p>
   </div>
@@ -303,7 +306,7 @@ export default function Caisse() {
       <td style="text-align:right;color:#dc2626;font-family:monospace">-${fmt(totalSorties)}</td>
     </tr></tfoot>
   </table>
-  <p class="footer">Meca Wood · La Caisse · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+  <p class="footer">${displayName} · La Caisse · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
   <script>window.onload=()=>{window.print()}<\/script>
 </body></html>`;
 

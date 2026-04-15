@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useBankPayments } from '../hooks/useBankPayments';
 import { useAuth } from '../hooks/useAuth';
+import { useSettings } from '../hooks/useSettings';
 import { fmtDate } from '../lib/utils';
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
@@ -145,6 +146,8 @@ function TransactionModal({ onClose, onSave, editData }) {
 /* ─── Main Page ─────────────────────────────────────────────────── */
 export default function BankPayments() {
     const { t } = useTranslation();
+    const { companyName } = useSettings();
+    const displayName = companyName || 'Meca Wood';
     const { transactions, loading, addTransaction, updateTransaction, deleteTransaction } = useBankPayments();
 
     const [showModal, setShowModal] = useState(false);
@@ -220,7 +223,7 @@ export default function BankPayments() {
         const html = `<!DOCTYPE html>
 <html lang="fr"><head>
 <meta charset="utf-8"/>
-<title>Paiements Bancaires – Meca Wood</title>
+<title>Paiements Bancaires – ${displayName}</title>
 <style>
   @page{size:A4 landscape;margin:15mm}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -247,7 +250,7 @@ export default function BankPayments() {
 </style>
 </head><body>
   <div class="header">
-    <h1>Paiements Bancaires &ndash; Meca Wood</h1>
+    <h1>Paiements Bancaires &ndash; ${displayName}</h1>
     <p class="company">${t('bank.subtitle')}</p>
     <p>${dateLabel} &nbsp;&middot;&nbsp; ${filtered.length} transaction(s)</p>
   </div>
@@ -270,7 +273,7 @@ export default function BankPayments() {
       <td style="text-align:right;color:#dc2626;font-family:monospace">-${fmt(totalSorties)}</td>
     </tr></tfoot>
   </table>
-  <p class="footer">Meca Wood · Paiements Bancaires · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+  <p class="footer">${displayName} · Paiements Bancaires · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
   <script>window.onload=()=>{window.print()}<\/script>
 </body></html>`;
 

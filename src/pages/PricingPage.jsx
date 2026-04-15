@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { useItems } from '../hooks/useItems';
+import { useSettings } from '../hooks/useSettings';
 import { useTranslation } from 'react-i18next';
 import { Tag, Search, TrendingUp, TrendingDown, Printer } from 'lucide-react';
 
 export default function PricingPage() {
     const { t } = useTranslation();
+    const { companyName } = useSettings();
+    const displayName = companyName || 'Meca Wood';
     const { items, loading } = useItems();
     const [search, setSearch] = useState('');
 
@@ -37,7 +40,7 @@ export default function PricingPage() {
             </tr>`;
         }).join('');
         const html = `<!DOCTYPE html>
-<html lang="fr"><head><meta charset="utf-8"/><title>Prix – Meca Wood</title>
+<html lang="fr"><head><meta charset="utf-8"/><title>Prix – ${displayName}</title>
 <style>
   @page{size:A4 portrait;margin:15mm}*{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#111}
@@ -49,7 +52,7 @@ export default function PricingPage() {
   .footer{margin-top:12px;font-size:8px;color:#aaa;text-align:right}
 </style></head><body>
   <div class="header">
-    <h1>${t('pricing.title')} – Meca Wood</h1>
+    <h1>${t('pricing.title')} – ${displayName}</h1>
     <p>${filtered.length} article(s)</p>
   </div>
   <table>
@@ -61,7 +64,7 @@ export default function PricingPage() {
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>
-  <p class="footer">Meca Wood · ${t('pricing.title')} · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+  <p class="footer">${displayName} · ${t('pricing.title')} · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
   <script>window.onload=()=>{window.print()}<\/script>
 </body></html>`;
         const win = window.open('', '_blank', 'width=900,height=700');

@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Mail, AlertCircle, Loader2, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '../hooks/useSettings';
 
 const loginSchema = z.object({
     email: z.string().email('Please enter a valid email address'),
@@ -14,10 +15,14 @@ const loginSchema = z.object({
 
 export default function Login() {
     const { t, i18n } = useTranslation();
+    const { logoUrl, companyName } = useSettings();
     const navigate = useNavigate();
     const location = useLocation();
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    const logoSrc = logoUrl || '/assets/logo.svg';
+    const displayName = companyName || 'Bootstrap Engines';
 
     const from = location.state?.from?.pathname || '/';
 
@@ -65,7 +70,7 @@ export default function Login() {
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="flex justify-center">
                     <div className="w-70 h-45 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-gray-100 p-2">
-                        <img src="/assets/logo.svg" alt="Meca Wood Logo" className="w-full h-full object-contain" />
+                        <img src={logoSrc} alt={`${displayName} Logo`} className="w-full h-full object-contain" />
                     </div>
                 </div>
             </div>

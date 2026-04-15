@@ -16,9 +16,11 @@ import BankPayments from './pages/BankPayments';
 import TVA from './pages/TVA';
 import Transports from './pages/Transports';
 import { useAuthInit } from './hooks/useAuth';
+import { useSettingsInit } from './hooks/useSettings';
 
 function App() {
-  useAuthInit(); // Initialize auth listener once at the top level
+  useAuthInit();       // Initialize auth listener once at the top level
+  useSettingsInit();   // Load logo + company name from DB once at the top level
   return (
     <Router>
       <Routes>

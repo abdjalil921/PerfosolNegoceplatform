@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useItems } from '../hooks/useItems';
 import { useTransactions } from '../hooks/useTransactions';
 import { useAuth } from '../hooks/useAuth';
+import { useSettings } from '../hooks/useSettings';
 import { useTranslation } from 'react-i18next';
 import ItemList from '../components/inventory/ItemList';
 import ItemModal from '../components/inventory/ItemModal';
@@ -24,6 +25,8 @@ function getGreeting(t) {
 
 export default function Dashboard() {
     const { profile } = useAuth();
+    const { companyName } = useSettings();
+    const displayName = companyName || 'Meca Wood';
     const { items, loading, refetch } = useItems();
     const { transactions, loading: txLoading } = useTransactions();
     const { t, i18n } = useTranslation();
@@ -72,7 +75,7 @@ export default function Dashboard() {
                 <td style="text-align:right;font-family:monospace">${item.min_stock_threshold || '—'}</td>
             </tr>`).join('');
         const html = `<!DOCTYPE html>
-<html lang="fr"><head><meta charset="utf-8"/><title>Stock – Meca Wood</title>
+<html lang="fr"><head><meta charset="utf-8"/><title>Stock – ${displayName}</title>
 <style>
   @page{size:A4 portrait;margin:15mm}*{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#111}
@@ -84,7 +87,7 @@ export default function Dashboard() {
   .footer{margin-top:12px;font-size:8px;color:#aaa;text-align:right}
 </style></head><body>
   <div class="header">
-    <h1>${t('dashboard.inventoryItems')} – Meca Wood</h1>
+    <h1>${t('dashboard.inventoryItems')} – ${displayName}</h1>
     <p>${filteredItems.length} article(s) en inventaire</p>
   </div>
   <table>
@@ -97,7 +100,7 @@ export default function Dashboard() {
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>
-  <p class="footer">Meca Wood · Stock · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+  <p class="footer">${displayName} · Stock · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
   <script>window.onload=()=>{window.print()}<\/script>
 </body></html>`;
         const win = window.open('', '_blank', 'width=900,height=700');

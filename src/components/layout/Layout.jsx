@@ -1,15 +1,20 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useSettings } from '../../hooks/useSettings';
 import { useTranslation } from 'react-i18next';
 import { Package, LayoutDashboard, ArrowLeftRight, BarChart2, Tag, ShoppingCart, TrendingUp, Wallet, Landmark, Percent, Settings, LogOut, Menu, X, Globe, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Layout() {
     const { user, profile, signOut } = useAuth();
+    const { logoUrl, companyName } = useSettings();
     const location = useLocation();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const { t, i18n } = useTranslation();
+
+    const logoSrc = logoUrl || '/assets/logo.svg';
+    const displayName = companyName || 'Bootstrap Engines';
 
     const toggleLang = () => {
         const next = i18n.language === 'en' ? 'fr' : 'en';
@@ -54,10 +59,10 @@ export default function Layout() {
                     {/* Header */}
                     <div className="flex items-center h-14 flex-shrink-0 px-3 bg-primary text-white">
                         <div className="bg-white p-1 rounded-md shadow-sm border border-gray-100 flex-shrink-0">
-                            <img src="/assets/logo.svg" alt="Meca Wood Logo" className="h-6 w-auto object-contain" />
+                            <img src={logoSrc} alt={`${displayName} Logo`} className="h-6 w-auto object-contain" />
                         </div>
                         {!collapsed && (
-                            <span className="font-bold text-base tracking-tight ml-2 flex-1 truncate" style={{ color: '#f8d31a' }}>Meca Wood</span>
+                            <span className="font-bold text-base tracking-tight ml-2 flex-1 truncate" style={{ color: '#f8d31a' }}>{displayName}</span>
                         )}
                         {!collapsed && (
                             <button
@@ -161,9 +166,9 @@ export default function Layout() {
             <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-primary text-white flex items-center justify-between h-14 px-4 shadow-sm">
                 <div className="flex items-center">
                     <div className="bg-white p-1.5 rounded-md mr-3 shadow-sm border border-gray-100 flex-shrink-0">
-                        <img src="/assets/logo.svg" alt="Meca Wood Logo" className="h-6 w-auto object-contain" />
+                        <img src={logoSrc} alt={`${displayName} Logo`} className="h-6 w-auto object-contain" />
                     </div>
-                    <span className="font-bold text-lg tracking-tight" style={{ color: '#f8d31a' }}>Meca Wood</span>
+                    <span className="font-bold text-lg tracking-tight" style={{ color: '#f8d31a' }}>{displayName}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <button onClick={toggleLang} className="flex items-center gap-1 text-xs font-semibold bg-white/20 hover:bg-white/30 px-2 py-1 rounded-md transition-colors">

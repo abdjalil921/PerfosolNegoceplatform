@@ -9,6 +9,7 @@ import {
 import { useTva } from '../hooks/useTva';
 import { useClients } from '../hooks/useClients';
 import { useCompanies } from '../hooks/useCompanies';
+import { useSettings } from '../hooks/useSettings';
 import { fmtDate } from '../lib/utils';
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
@@ -180,6 +181,8 @@ function TVAModal({ onClose, onSave, editData, clients, companies }) {
 /* ─── Main Page ─────────────────────────────────────────────────── */
 export default function TVA() {
     const { t } = useTranslation();
+    const { companyName } = useSettings();
+    const displayName = companyName || 'Meca Wood';
     const { transactions, loading, addTransaction, updateTransaction, deleteTransaction } = useTva();
     const { clients } = useClients();
     const { companies } = useCompanies();
@@ -279,7 +282,7 @@ export default function TVA() {
         const html = `<!DOCTYPE html>
 <html lang="fr"><head>
 <meta charset="utf-8"/>
-<title>TVA – Meca Wood</title>
+<title>TVA – ${displayName}</title>
 <style>
   @page{size:A4 landscape;margin:12mm}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -301,7 +304,7 @@ export default function TVA() {
 </style>
 </head><body>
   <div class="header">
-    <h1>TVA &ndash; Meca Wood</h1>
+    <h1>TVA &ndash; ${displayName}</h1>
     <p>${t('tva.subtitle')}</p>
   </div>
   <div class="wrap">
@@ -331,7 +334,7 @@ export default function TVA() {
   <div class="solde" style="background:${solde >= 0 ? '#f0fdf4' : '#fff1f2'};border:2px solid ${soldeColor};color:${soldeColor}">
     ${t('tva.solde')}: ${soldeSign}${fmt(solde)} MAD &nbsp;&mdash;&nbsp; ${solde >= 0 ? t('tva.soldeCredit') : t('tva.soldeDebit')}
   </div>
-  <p class="footer">Meca Wood · TVA · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+  <p class="footer">${displayName} · TVA · Imprimé le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
   <script>window.onload=()=>{window.print()}<\/script>
 </body></html>`;
 

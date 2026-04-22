@@ -529,6 +529,7 @@ export default function Sales() {
     const [sortField, setSortField] = useState('date');
     const [paymentStatus, setPaymentStatus] = useState(''); // '' | 'paid' | 'pending' | 'unpaid'
     const [showFilterPanel, setShowFilterPanel] = useState(false);
+    const [dateField, setDateField] = useState('transaction'); // 'transaction' | 'payment'
 
     const filteredSales = useMemo(() => {
         const filtered = sales.filter(s => {
@@ -537,8 +538,8 @@ export default function Sales() {
                 (s.company_name || '').toLowerCase().includes(q) ||
                 (s.item_sold || '').toLowerCase().includes(q) ||
                 (s.receipt_number || '').toLowerCase().includes(q);
-            const matchFrom = !dateFrom || (s.transaction_date && s.transaction_date >= dateFrom);
-            const matchTo = !dateTo || (s.transaction_date && s.transaction_date <= dateTo);
+            const matchFrom = !dateFrom || ((dateField === 'payment' ? s.payment_date : s.transaction_date) || '') >= dateFrom;
+            const matchTo = !dateTo || ((dateField === 'payment' ? s.payment_date : s.transaction_date) || '') <= dateTo;
             const matchStatus = !paymentStatus || getPaymentStatus(s.payment_date) === paymentStatus;
             return matchSearch && matchFrom && matchTo && matchStatus;
         });
@@ -548,16 +549,17 @@ export default function Sales() {
                 const rb = (b.receipt_number || '').toLowerCase();
                 return sortOrder === 'asc' ? ra.localeCompare(rb, undefined, { numeric: true }) : rb.localeCompare(ra, undefined, { numeric: true });
             }
-            const da = a.transaction_date || '';
-            const db = b.transaction_date || '';
+            const field = dateField === 'payment' ? 'payment_date' : 'transaction_date';
+            const da = a[field] || '';
+            const db = b[field] || '';
             return sortOrder === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
         });
-    }, [sales, search, dateFrom, dateTo, sortOrder, sortField, paymentStatus]);
+    }, [sales, search, dateFrom, dateTo, sortOrder, sortField, paymentStatus, dateField]);
 
     const defaultFrom = currentYearStart();
-    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || sortField !== 'date' || paymentStatus;
-    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (sortField !== 'date' ? 1 : 0) + (paymentStatus ? 1 : 0);
-    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setSortField('date'); setPaymentStatus(''); setShowFilterPanel(false); };
+    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || sortField !== 'date' || paymentStatus || dateField !== 'transaction';
+    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (sortField !== 'date' ? 1 : 0) + (paymentStatus ? 1 : 0) + (dateField !== 'transaction' ? 1 : 0);
+    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setSortField('date'); setPaymentStatus(''); setDateField('transaction'); setShowFilterPanel(false); };
 
     const totalPriceHT = filteredSales.reduce((sum, s) => sum + (Number(s.price_ht) || 0), 0);
     const totalTVA = filteredSales.reduce((sum, s) => sum + (Number(s.tva_20) || 0), 0);
@@ -981,6 +983,24 @@ export default function Sales() {
                                             }`}>
                                             {t('sales.unpaid')}
                                         </button>
+                                    </div>
+                                    {/* Date field toggle */}
+                                    <div className="mb-3">
+                                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Date field</p>
+                                        <div className="grid grid-cols-2 gap-1.5">
+                                            <button onClick={() => setDateField('transaction')}
+                                                className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                                    dateField === 'transaction' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                                }`}>
+                                                {t('common.filterByTransactionDate')}
+                                            </button>
+                                            <button onClick={() => setDateField('payment')}
+                                                className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                                    dateField === 'payment' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                                }`}>
+                                                {t('common.filterByPaymentDate')}
+                                            </button>
+                                        </div>
                                     </div>
                                     {/* Date range */}
                                     <div className="space-y-2 mb-3">

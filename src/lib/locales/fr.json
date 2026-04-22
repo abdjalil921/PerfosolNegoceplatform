@@ -250,7 +250,15 @@
         "applyFilters": "Appliquer",
         "sortNewest": "Plus récent d'abord",
         "sortOldest": "Plus ancien d'abord",
-        "paymentStatus": "Statut de paiement"
+        "filterByTransactionDate": "Date de Transaction",
+        "filterByPaymentDate": "Date de Paiement",
+        "paymentStatus": "Statut de paiement",
+        "source": "Source",
+        "sourceSales": "Ventes",
+        "sourcePurchases": "Achats",
+        "sourceManual": "Saisie manuelle",
+        "sourceSaleBadge": "Vente",
+        "sourcePurchaseBadge": "Achat"
     },
     "pricing": {
         "title": "Prix d'Achat et de Vente",
@@ -417,6 +425,7 @@
         "confirmDelete": "Supprimer cette transaction ?",
         "confirmDeleteDesc": "Cette action est irréversible.",
         "paid": "Payé",
+        "pending": "En cours",
         "unpaid": "Non payé",
         "dateRequired": "La date de transaction est obligatoire",
         "saveFailed": "Échec de l'enregistrement. Réessayez."

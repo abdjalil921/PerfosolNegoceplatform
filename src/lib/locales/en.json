@@ -250,7 +250,15 @@
         "applyFilters": "Apply",
         "sortNewest": "Newest first",
         "sortOldest": "Oldest first",
-        "paymentStatus": "Payment Status"
+        "filterByTransactionDate": "Transaction Date",
+        "filterByPaymentDate": "Payment Date",
+        "paymentStatus": "Payment Status",
+        "source": "Source",
+        "sourceSales": "Sales",
+        "sourcePurchases": "Purchases",
+        "sourceManual": "Manual entry",
+        "sourceSaleBadge": "Sale",
+        "sourcePurchaseBadge": "Purchase"
     },
     "pricing": {
         "title": "Buying & Selling Prices",
@@ -417,6 +425,7 @@
         "confirmDelete": "Delete this transaction?",
         "confirmDeleteDesc": "This action cannot be undone.",
         "paid": "Paid",
+        "pending": "In Progress",
         "unpaid": "Unpaid",
         "dateRequired": "Transaction date is required",
         "saveFailed": "Failed to save. Please try again."

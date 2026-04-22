@@ -459,6 +459,7 @@ export default function Purchases() {
     const [sortOrder, setSortOrder] = useState('desc');
     const [paymentStatus, setPaymentStatus] = useState(''); // '' | 'paid' | 'pending' | 'unpaid'
     const [showFilterPanel, setShowFilterPanel] = useState(false);
+    const [dateField, setDateField] = useState('transaction'); // 'transaction' | 'payment'
 
     const filteredPurchases = useMemo(() => {
         const filtered = purchases.filter(p => {
@@ -467,22 +468,23 @@ export default function Purchases() {
                 (p.company_name || '').toLowerCase().includes(q) ||
                 (p.item_purchased || '').toLowerCase().includes(q) ||
                 (p.receipt_number || '').toLowerCase().includes(q);
-            const matchFrom = !dateFrom || (p.transaction_date && p.transaction_date >= dateFrom);
-            const matchTo = !dateTo || (p.transaction_date && p.transaction_date <= dateTo);
+            const matchFrom = !dateFrom || ((dateField === 'payment' ? p.payment_date : p.transaction_date) || '') >= dateFrom;
+            const matchTo = !dateTo || ((dateField === 'payment' ? p.payment_date : p.transaction_date) || '') <= dateTo;
             const matchStatus = !paymentStatus || getPaymentStatus(p.payment_date) === paymentStatus;
             return matchSearch && matchFrom && matchTo && matchStatus;
         });
         return [...filtered].sort((a, b) => {
-            const da = a.transaction_date || '';
-            const db = b.transaction_date || '';
+            const field = dateField === 'payment' ? 'payment_date' : 'transaction_date';
+            const da = a[field] || '';
+            const db = b[field] || '';
             return sortOrder === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
         });
-    }, [purchases, search, dateFrom, dateTo, sortOrder, paymentStatus]);
+    }, [purchases, search, dateFrom, dateTo, sortOrder, paymentStatus, dateField]);
 
     const defaultFrom = currentYearStart();
-    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || paymentStatus;
-    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (paymentStatus ? 1 : 0);
-    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setPaymentStatus(''); setShowFilterPanel(false); };
+    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || paymentStatus || dateField !== 'transaction';
+    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (paymentStatus ? 1 : 0) + (dateField !== 'transaction' ? 1 : 0);
+    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setPaymentStatus(''); setDateField('transaction'); setShowFilterPanel(false); };
 
     const totalPriceHT = filteredPurchases.reduce((sum, p) => sum + (Number(p.price_ht) || 0), 0);
     const totalTVA = filteredPurchases.reduce((sum, p) => sum + (Number(p.tva_20) || 0), 0);
@@ -823,6 +825,24 @@ export default function Purchases() {
                                             }`}>
                                             {t('purchases.unpaid')}
                                         </button>
+                                    </div>
+                                    {/* Date field toggle */}
+                                    <div className="mb-3">
+                                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Date field</p>
+                                        <div className="grid grid-cols-2 gap-1.5">
+                                            <button onClick={() => setDateField('transaction')}
+                                                className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                                    dateField === 'transaction' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                                }`}>
+                                                {t('common.filterByTransactionDate')}
+                                            </button>
+                                            <button onClick={() => setDateField('payment')}
+                                                className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                                    dateField === 'payment' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                                }`}>
+                                                {t('common.filterByPaymentDate')}
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="space-y-2 mb-3">
                                         <div>

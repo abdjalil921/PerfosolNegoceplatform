@@ -9,7 +9,7 @@ import {
 import { useCaisse } from '../hooks/useCaisse';
 import { useAuth } from '../hooks/useAuth';
 import { useSettings } from '../hooks/useSettings';
-import { fmtDate } from '../lib/utils';
+import { fmtDate, getPaymentStatus } from '../lib/utils';
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
 const fmt = (val) => {
@@ -184,27 +184,39 @@ export default function Caisse() {
     const [dateFrom, setDateFrom] = useState(currentYearStart());
     const [dateTo, setDateTo] = useState('');
     const [sortOrder, setSortOrder] = useState('desc');
+    const [sortField, setSortField] = useState('date'); // 'date' | 'receipt'
+    const [paymentStatus, setPaymentStatus] = useState(''); // '' | 'paid' | 'pending' | 'unpaid'
+    const [sourceType, setSourceType] = useState(''); // '' | 'sale' | 'purchase' | 'manual'
     const [showFilterPanel, setShowFilterPanel] = useState(false);
+    const [dateField, setDateField] = useState('transaction'); // 'transaction' | 'payment'
 
     const filtered = useMemo(() => {
         const q = search.toLowerCase();
         const list = transactions.filter(tx => {
-            const matchSearch = !q || (tx.libelle || '').toLowerCase().includes(q);
-            const matchFrom = !dateFrom || (tx.transaction_date && tx.transaction_date >= dateFrom);
-            const matchTo = !dateTo || (tx.transaction_date && tx.transaction_date <= dateTo);
-            return matchSearch && matchFrom && matchTo;
+            const matchSearch = !q || (tx.libelle || '').toLowerCase().includes(q) || (tx.receipt_number || '').toLowerCase().includes(q);
+            const matchFrom = !dateFrom || ((dateField === 'payment' ? tx.payment_date : tx.transaction_date) || '') >= dateFrom;
+            const matchTo = !dateTo || ((dateField === 'payment' ? tx.payment_date : tx.transaction_date) || '') <= dateTo;
+            const matchStatus = !paymentStatus || getPaymentStatus(tx.payment_date) === paymentStatus;
+            const matchSource = !sourceType || (sourceType === 'manual' ? !tx.source_type : tx.source_type === sourceType);
+            return matchSearch && matchFrom && matchTo && matchStatus && matchSource;
         });
         return [...list].sort((a, b) => {
-            const da = a.transaction_date || '';
-            const db = b.transaction_date || '';
+            if (sortField === 'receipt') {
+                const ra = (a.receipt_number || '').toLowerCase();
+                const rb = (b.receipt_number || '').toLowerCase();
+                return sortOrder === 'asc' ? ra.localeCompare(rb, undefined, { numeric: true }) : rb.localeCompare(ra, undefined, { numeric: true });
+            }
+            const field = dateField === 'payment' ? 'payment_date' : 'transaction_date';
+            const da = a[field] || '';
+            const db = b[field] || '';
             return sortOrder === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
         });
-    }, [transactions, search, dateFrom, dateTo, sortOrder]);
+    }, [transactions, search, dateFrom, dateTo, sortOrder, sortField, paymentStatus, sourceType, dateField]);
 
     const defaultFrom = currentYearStart();
-    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc';
-    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0);
-    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setShowFilterPanel(false); };
+    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || sortField !== 'date' || paymentStatus || sourceType || dateField !== 'transaction';
+    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (sortField !== 'date' ? 1 : 0) + (paymentStatus ? 1 : 0) + (sourceType ? 1 : 0) + (dateField !== 'transaction' ? 1 : 0);
+    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setSortField('date'); setPaymentStatus(''); setSourceType(''); setDateField('transaction'); setShowFilterPanel(false); };
 
     // ── Totals (paid only — payment_date must be set) ──
     const paid = filtered.filter(tx => tx.payment_date);
@@ -431,6 +443,7 @@ export default function Caisse() {
                     {showFilterPanel && (
                         <div className="absolute right-0 top-full mt-1.5 z-30 bg-white border border-gray-200 rounded-xl shadow-lg p-4 w-72">
                             <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('common.filterBy')}</p>
+                            {/* Sort order */}
                             <div className="grid grid-cols-2 gap-1.5 mb-3">
                                 <button onClick={() => setSortOrder('desc')}
                                     className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
@@ -444,6 +457,84 @@ export default function Caisse() {
                                     }`}>
                                     {t('common.sortOldest')}
                                 </button>
+                            </div>
+                            {/* Sort field */}
+                            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 mt-1">Sort by</p>
+                            <div className="grid grid-cols-2 gap-1.5 mb-3">
+                                <button onClick={() => setSortField('date')}
+                                    className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                        sortField === 'date' ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                    }`}>
+                                    {t('common.filterByTransactionDate')}
+                                </button>
+                                <button onClick={() => setSortField('receipt')}
+                                    className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                        sortField === 'receipt' ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                    }`}>
+                                    {t('sales.receiptNumber')}
+                                </button>
+                            </div>
+                            {/* Payment Status */}
+                            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 mt-1">{t('common.paymentStatus')}</p>
+                            <div className="grid grid-cols-3 gap-1.5 mb-3">
+                                <button onClick={() => setPaymentStatus(paymentStatus === 'paid' ? '' : 'paid')}
+                                    className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                        paymentStatus === 'paid' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                    }`}>
+                                    {t('caisse.paid')}
+                                </button>
+                                <button onClick={() => setPaymentStatus(paymentStatus === 'pending' ? '' : 'pending')}
+                                    className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                        paymentStatus === 'pending' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                    }`}>
+                                    {t('caisse.pending') || 'In Progress'}
+                                </button>
+                                <button onClick={() => setPaymentStatus(paymentStatus === 'unpaid' ? '' : 'unpaid')}
+                                    className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                        paymentStatus === 'unpaid' ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                    }`}>
+                                    {t('caisse.unpaid')}
+                                </button>
+                            </div>
+                            {/* Source type */}
+                            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 mt-1">{t('common.source')}</p>
+                            <div className="grid grid-cols-2 gap-1.5 mb-3">
+                                <button onClick={() => setSourceType(sourceType === 'sale' ? '' : 'sale')}
+                                    className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                        sourceType === 'sale' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                    }`}>
+                                    {t('common.sourceSales')}
+                                </button>
+                                <button onClick={() => setSourceType(sourceType === 'purchase' ? '' : 'purchase')}
+                                    className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                        sourceType === 'purchase' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                    }`}>
+                                    {t('common.sourcePurchases')}
+                                </button>
+                                <button onClick={() => setSourceType(sourceType === 'manual' ? '' : 'manual')}
+                                    className={`col-span-2 px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                        sourceType === 'manual' ? 'bg-gray-600 text-white border-gray-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                    }`}>
+                                    {t('common.sourceManual')}
+                                </button>
+                            </div>
+                            {/* Date field toggle */}
+                            <div className="mb-3">
+                                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Date field</p>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                    <button onClick={() => setDateField('transaction')}
+                                        className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                            dateField === 'transaction' ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                        }`}>
+                                        {t('common.filterByTransactionDate')}
+                                    </button>
+                                    <button onClick={() => setDateField('payment')}
+                                        className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                            dateField === 'payment' ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                        }`}>
+                                        {t('common.filterByPaymentDate')}
+                                    </button>
+                                </div>
                             </div>
                             <div className="space-y-2 mb-3">
                                 <div>
@@ -521,9 +612,12 @@ export default function Caisse() {
                                             </button>
                                         </div>
                                     )}
-                                    {tx.source_id && (
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-violet-50 text-violet-600 border border-violet-100">Auto</span>
-                                    )}
+                                    {tx.source_type === 'sale'
+                                        ? <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">{t('common.sourceSaleBadge')}</span>
+                                        : tx.source_type === 'purchase'
+                                        ? <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-100">{t('common.sourcePurchaseBadge')}</span>
+                                        : null
+                                    }
                                 </div>
                                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
                                     <div className="flex gap-4">
@@ -589,8 +683,10 @@ export default function Caisse() {
                                                 {Number(tx.sorties) > 0 ? `-${fmt(tx.sorties)}` : '—'}
                                             </td>
                                             <td className="px-4 py-3 text-center">
-                                                {tx.source_id ? (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-violet-50 text-violet-600 border border-violet-100">Auto</span>
+                                                {tx.source_type === 'sale' ? (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">{t('common.sourceSaleBadge')}</span>
+                                                ) : tx.source_type === 'purchase' ? (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-100">{t('common.sourcePurchaseBadge')}</span>
                                                 ) : !isComptable ? (
                                                     <div className="flex items-center justify-center gap-1">
                                                         <button onClick={() => setEditingTx(tx)}

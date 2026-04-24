@@ -694,9 +694,12 @@ export default function Sales() {
         const html = `<!DOCTYPE html>
 <html lang="fr"><head><meta charset="utf-8"/><title>Facture ${s.receipt_number || ''}</title>
 <style>
-  @page{size:A4 portrait;margin:0}
+  @page{size:A4 portrait;margin:62mm 18mm 54mm 18mm}
+  @page:left{@top-left{content:''}@top-center{content:''}@top-right{content:''}@bottom-left{content:''}@bottom-center{content:''}@bottom-right{content:''}}
+  @page:right{@top-left{content:''}@top-center{content:''}@top-right{content:''}@bottom-left{content:''}@bottom-center{content:''}@bottom-right{content:''}}
+  @page{@top-left{content:''}@top-center{content:''}@top-right{content:''}@bottom-left{content:''}@bottom-center{content:''}@bottom-right{content:''}}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:50mm 18mm 42mm 18mm}
+  body{font-family:Arial,sans-serif;font-size:12px;color:#111;}
   /* ── Group spacing ── */
   .g1{margin-bottom:32px}
   .g2{margin-bottom:32px}
@@ -858,7 +861,7 @@ export default function Sales() {
                 <div className="flex flex-wrap gap-2">
                     {!isComptable && (
                         <button onClick={() => setShowCompanyModal(true)}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary border border-primary/30 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary border border-primary rounded-lg bg-transparent hover:bg-blue-50 transition-colors">
                             <Building2 className="w-4 h-4" />
                             {t('sales.addCompany')}
                         </button>
@@ -877,11 +880,13 @@ export default function Sales() {
             <div className="flex border-b border-gray-200">
                 <button onClick={() => setActiveTab('sales')}
                     className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sales' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-                    {t('sales.tabSales')} ({filteredSales.length}/{sales.length})
+                    {t('sales.tabSales')}
+                    <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-xs ml-1.5">{filteredSales.length}/{sales.length}</span>
                 </button>
                 <button onClick={() => setActiveTab('companies')}
                     className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === 'companies' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-                    {t('sales.tabCompanies')} ({clients.length})
+                    {t('sales.tabCompanies')}
+                    <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-xs ml-1.5">{clients.length}</span>
                 </button>
             </div>
 
@@ -890,18 +895,28 @@ export default function Sales() {
                 <div className="space-y-3">
                     {/* Totals Quick Stats */}
                     <div className="grid grid-cols-3 gap-3">
-                        <div className="rounded-xl border p-4 bg-gray-50 border-gray-200">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">{t('sales.priceHT')}</p>
+                        <div className="rounded-xl border border-t-2 border-gray-200 p-4 bg-gray-50">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1.5">
+                                <span className="inline-block w-[7px] h-[7px] rounded-full bg-gray-400 flex-shrink-0"></span>
+                                {t('sales.priceHT')}
+                            </p>
                             <p className="text-xl font-bold font-mono text-gray-800">{fmt(totalPriceHT)} <span className="text-sm font-normal text-gray-400">MAD</span></p>
                             <p className="text-xs text-gray-400 mt-0.5">{filteredSales.length} vente(s)</p>
                         </div>
-                        <div className="rounded-xl border p-4 bg-orange-50 border-orange-100">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-orange-600 mb-1">{t('sales.tva20')}</p>
+                        <div className="rounded-xl border border-orange-100 border-t-2 p-4 bg-orange-50" style={{ borderTopColor: '#E8610A' }}>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-orange-600 mb-1 flex items-center gap-1.5">
+                                <span className="inline-block w-[7px] h-[7px] rounded-full flex-shrink-0" style={{ backgroundColor: '#E8610A' }}></span>
+                                {t('sales.tva20')}
+                            </p>
                             <p className="text-xl font-bold font-mono text-orange-700">{fmt(totalTVA)} <span className="text-sm font-normal text-orange-400">MAD</span></p>
                         </div>
-                        <div className="rounded-xl border p-4 bg-emerald-50 border-emerald-100">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600 mb-1">Total TTC</p>
+                        <div className="rounded-xl border border-emerald-100 border-t-2 border-t-emerald-500 p-4 bg-emerald-50">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600 mb-1 flex items-center gap-1.5">
+                                <span className="inline-block w-[7px] h-[7px] rounded-full bg-emerald-500 flex-shrink-0"></span>
+                                Total TTC
+                            </p>
                             <p className="text-xl font-bold font-mono text-emerald-700">{fmt(totalTTC)} <span className="text-sm font-normal text-emerald-400">MAD</span></p>
+                            <p className="text-xs text-gray-400 mt-0.5">Toutes taxes comprises</p>
                         </div>
                     </div>
                     {/* Filter bar */}
@@ -1120,40 +1135,43 @@ export default function Sales() {
                             </div>
 
                             {/* Desktop table */}
-                            <div className="hidden sm:block bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                            <div className="hidden sm:block bg-white rounded-xl border border-border shadow-sm overflow-hidden">
                                 <HScrollWrapper>
-                                    <table className="min-w-full divide-y divide-gray-100">
+                                    <table className="min-w-full">
                                         <thead className="bg-gray-50">
                                             <tr>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('sales.transactionDate')}</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('sales.company')}</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('sales.receiptNumber')}</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('sales.itemSold')}</th>
-                                                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('sales.priceHT')}</th>
-                                                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('sales.tva20')}</th>
-                                                <th className="px-4 py-3 text-right text-xs font-semibold text-emerald-600 uppercase tracking-wider">Total TTC</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('sales.paymentDate')}</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('common.paymentMethod')}</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">IF</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ICE</th>
-                                                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('sales.printInvoice')}</th>
-                                                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('common.edit')}/{t('common.delete')}</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.transactionDate')}</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.company')}</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.receiptNumber')}</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.itemSold')}</th>
+                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.priceHT')}</th>
+                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.tva20')}</th>
+                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">Total TTC</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.paymentDate')}</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('common.paymentMethod')}</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">IF</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">ICE</th>
+                                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.printInvoice')}</th>
+                                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wide">{t('common.edit')}/{t('common.delete')}</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-gray-100">
-                                            {filteredSales.map(s => (
-                                                <tr key={s.id} className="hover:bg-gray-50 transition-colors">
-                                                    <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">{fmtDate(s.transaction_date)}</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-900 font-medium">{s.company_name || '—'}</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-500">{s.receipt_number || '—'}</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-700 max-w-[200px]">
+                                        <tbody>
+                                            {filteredSales.map((s, idx) => {
+                                                const status = getPaymentStatus(s.payment_date);
+                                                const rowAccent = status === 'paid' ? 'border-l-[3px] border-l-green-600' : status === 'unpaid' ? 'border-l-[3px] border-l-orange-500' : status === 'pending' ? 'border-l-[3px] border-l-blue-500' : '';
+                                                return (
+                                                <tr key={s.id} className={`hover:bg-gray-50 transition-colors ${rowAccent} ${idx < filteredSales.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                                                    <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap tabular-nums">{fmtDate(s.transaction_date)}</td>
+                                                    <td className="px-4 py-3 text-sm font-medium text-primary whitespace-nowrap">{s.company_name || '—'}</td>
+                                                    <td className="px-4 py-3 text-sm font-mono text-gray-400 whitespace-nowrap">{s.receipt_number || '—'}</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-400 max-w-[200px]">
                                                         {s.line_items?.length ? s.line_items.map((li, i) => (
-                                                            <div key={i} className="truncate mb-0.5" title={li.name}>{li.name} {li.quantity ? <span className="text-gray-400">× {li.quantity}</span> : ''}</div>
+                                                            <div key={i} className="truncate mb-0.5" title={li.name}>{li.name} {li.quantity ? <span className="text-gray-300">× {li.quantity}</span> : ''}</div>
                                                         )) : <div className="truncate">{s.item_sold}</div>}
                                                     </td>
-                                                    <td className="px-4 py-3 text-sm text-right text-gray-700 font-mono whitespace-nowrap">{fmt(s.price_ht)}</td>
-                                                    <td className="px-4 py-3 text-sm text-right text-orange-600 font-mono whitespace-nowrap">{fmt(s.tva_20)}</td>
-                                                    <td className="px-4 py-3 text-sm text-right text-emerald-700 font-semibold font-mono whitespace-nowrap">{fmt(s.total_ttc)}</td>
+                                                    <td className="px-4 py-3 text-sm text-right font-medium font-mono tabular-nums text-gray-700 whitespace-nowrap">{fmt(s.price_ht)}</td>
+                                                    <td className="px-4 py-3 text-sm text-right font-mono tabular-nums whitespace-nowrap" style={{ color: '#E8610A' }}>{fmt(s.tva_20)}</td>
+                                                    <td className="px-4 py-3 text-sm text-right font-semibold font-mono tabular-nums whitespace-nowrap text-emerald-700">{fmt(s.total_ttc)}</td>
                                                     <td className="px-4 py-3 text-sm whitespace-nowrap">
                                                         <PaymentBadge payment_date={s.payment_date} fmtDate={fmtDate} />
                                                     </td>
@@ -1164,8 +1182,8 @@ export default function Sales() {
                                                             </span>
                                                         ) : '—'}
                                                     </td>
-                                                    <td className="px-4 py-3 text-sm text-gray-500 font-mono whitespace-nowrap">{s.if_tax || '—'}</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-500 font-mono whitespace-nowrap">{s.ice || '—'}</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-400 font-mono whitespace-nowrap">{s.if_tax || '—'}</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-400 font-mono whitespace-nowrap">{s.ice || '—'}</td>
                                                     <td className="px-4 py-3 text-center">
                                                         <button onClick={() => handlePrintSaleInvoice(s)}
                                                             title={t('sales.printInvoice')}
@@ -1188,7 +1206,8 @@ export default function Sales() {
                                                         )}
                                                     </td>
                                                 </tr>
-                                            ))}
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </HScrollWrapper>

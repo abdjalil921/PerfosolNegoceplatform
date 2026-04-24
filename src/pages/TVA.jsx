@@ -399,22 +399,31 @@ export default function TVA() {
 
             {/* Summary Boxes */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="rounded-xl border p-4 bg-blue-50 border-blue-100 text-blue-900">
-                    <p className="text-xs font-semibold uppercase tracking-wider opacity-70">{t('tva.totalVente')}</p>
+                <div className="rounded-xl border border-blue-100 border-t-2 border-t-blue-500 p-4 flex flex-col gap-1 bg-blue-50 text-blue-900">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider opacity-80">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-blue-500 flex-shrink-0"></span>
+                        {t('tva.totalVente')}
+                    </div>
                     <p className="text-xl font-bold font-mono mt-1">{fmt(totalVente)} <span className="text-sm font-normal opacity-60">MAD</span></p>
-                    <p className="text-xs text-blue-600 mt-0.5">{venteItems.length} entr{venteItems.length > 1 ? 'ées' : 'ée'}</p>
+                    <p className="text-xs opacity-50 mt-0.5">{venteItems.length} entr{venteItems.length > 1 ? 'ées' : 'ée'}</p>
                 </div>
-                <div className="rounded-xl border p-4 bg-orange-50 border-orange-100 text-orange-900">
-                    <p className="text-xs font-semibold uppercase tracking-wider opacity-70">{t('tva.totalAchat')}</p>
+                <div className="rounded-xl border border-orange-100 border-t-2 border-t-orange-500 p-4 flex flex-col gap-1 bg-orange-50 text-orange-900">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider opacity-80">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-orange-500 flex-shrink-0"></span>
+                        {t('tva.totalAchat')}
+                    </div>
                     <p className="text-xl font-bold font-mono mt-1">{fmt(totalAchat)} <span className="text-sm font-normal opacity-60">MAD</span></p>
-                    <p className="text-xs text-orange-600 mt-0.5">{achatItems.length} entr{achatItems.length > 1 ? 'ées' : 'ée'}</p>
+                    <p className="text-xs opacity-50 mt-0.5">{achatItems.length} entr{achatItems.length > 1 ? 'ées' : 'ée'}</p>
                 </div>
-                <div className={`rounded-xl border p-4 ${soldePositive ? 'bg-green-50 border-green-200 text-green-900' : 'bg-red-50 border-red-200 text-red-900'}`}>
-                    <p className="text-xs font-semibold uppercase tracking-wider opacity-70">{t('tva.solde')}</p>
+                <div className={`rounded-xl border border-t-2 p-4 flex flex-col gap-1 ${soldePositive ? 'border-green-200 border-t-green-600 bg-green-50 text-green-900' : 'border-red-200 border-t-red-600 bg-red-50 text-red-900'}`}>
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider opacity-80">
+                        <span className={`inline-block w-[7px] h-[7px] rounded-full flex-shrink-0 ${soldePositive ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                        {t('tva.solde')}
+                    </div>
                     <p className={`text-xl font-bold font-mono mt-1 ${soldePositive ? 'text-green-700' : 'text-red-700'}`}>
                         {soldePositive ? '+' : ''}{fmt(solde)} <span className="text-sm font-normal opacity-60">MAD</span>
                     </p>
-                    <p className={`text-xs mt-0.5 ${soldePositive ? 'text-green-600' : 'text-red-600'}`}>
+                    <p className={`text-xs mt-0.5 opacity-60`}>
                         {soldePositive ? t('tva.soldeCredit') : t('tva.soldeDebit')}
                     </p>
                 </div>

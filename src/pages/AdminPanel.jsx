@@ -13,17 +13,17 @@ import { useTranslation } from 'react-i18next';
 function RoleBadge({ role }) {
     const { t } = useTranslation();
     if (role === 'admin') return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
             <ShieldCheck className="w-3 h-3 mr-1" />{t('admin.roleAdmin')}
         </span>
     );
     if (role === 'comptable') return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
             <User className="w-3 h-3 mr-1" />{t('admin.roleComptable')}
         </span>
     );
     return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
             <User className="w-3 h-3 mr-1" />{t('admin.roleUser')}
         </span>
     );
@@ -378,50 +378,47 @@ function ProfileRow({ profile, currentUserId, onRoleChange, onDelete }) {
                 </div>
             )}
 
-            <tr className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                        <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+            <tr className={`hover:bg-gray-50/70 transition-colors border-b border-gray-100 last:border-0`}>
+                <td className="px-6 py-3.5 whitespace-nowrap">
+                    <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0">
                             {(profile.full_name || profile.email || '?').charAt(0).toUpperCase()}
                         </div>
-                        <div className="ml-3">
-                            <div className="text-sm font-medium text-gray-900">
+                        <div>
+                            <div className="text-sm font-medium text-gray-800">
                                 {profile.full_name || '—'}
                                 {isSelf && (
-                                    <span className="ml-2 text-xs text-gray-400">{t('admin.you')}</span>
+                                    <span className="ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase tracking-wide">{t('admin.you')}</span>
                                 )}
                             </div>
-                            <div className="text-sm text-gray-500">{profile.email}</div>
+                            <div className="text-xs text-gray-400">{profile.email}</div>
                         </div>
                     </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-3.5 whitespace-nowrap">
                     <RoleBadge role={profile.role} />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-400 hidden md:table-cell">
                     {formatDate(profile.created_at)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                <td className="px-6 py-3.5 whitespace-nowrap text-right text-sm">
                     <div className="flex items-center justify-end gap-2">
                         {isSelf ? (
-                            <span className="text-xs text-gray-400 italic">{t('admin.cannotChange')}</span>
+                            <span className="text-xs text-gray-300 italic">{t('admin.cannotChange')}</span>
                         ) : (
                             <>
-                                {/* Change Role */}
                                 <button onClick={() => setShowRolePicker(true)}
-                                    className="inline-flex items-center px-3 py-1.5 rounded-md text-sm border border-gray-300 text-gray-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-400 transition-colors">
+                                    className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 text-gray-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300 transition-colors">
                                     <ShieldCheck className="w-3 h-3 mr-1" />
                                     {t('admin.changeRole')}
                                 </button>
-                                {/* Change Password */}
                                 <button onClick={() => setShowChangePwd(true)}
-                                    className="inline-flex items-center px-3 py-1.5 rounded-md text-sm border border-gray-300 text-gray-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-400 transition-colors">
+                                    className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 text-gray-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300 transition-colors">
                                     <KeyRound className="w-3 h-3 mr-1" />
                                     {t('admin.changePassword')}
                                 </button>
-                                {/* Delete */}
                                 <button onClick={() => setConfirmDelete(true)}
-                                    className="inline-flex items-center p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors">
+                                    className="inline-flex items-center p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors">
                                     <Trash2 className="w-4 h-4" />
                                 </button>
                             </>
@@ -484,54 +481,52 @@ export default function AdminPanel() {
 
             {/* Stats cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center">
-                    <div className="p-3 rounded-full bg-purple-50 text-purple-600 mr-4">
-                        <ShieldCheck className="w-6 h-6" />
+                <div className="bg-white rounded-xl border border-purple-100 border-t-2 border-t-purple-500 shadow-sm p-4 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-purple-500 flex-shrink-0"></span>
+                        {t('admin.admins')}
                     </div>
-                    <div>
-                        <p className="text-sm text-gray-500">{t('admin.admins')}</p>
-                        <p className="text-2xl font-bold text-gray-900">{admins.length}</p>
-                    </div>
+                    <p className="text-2xl font-bold text-purple-600 mt-1 tabular-nums">{admins.length}</p>
+                    <p className="text-xs text-gray-400">{t('admin.roleAdmin')}</p>
                 </div>
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center">
-                    <div className="p-3 rounded-full bg-blue-50 text-primary mr-4">
-                        <Users className="w-6 h-6" />
+                <div className="bg-white rounded-xl border border-blue-100 border-t-2 border-t-blue-500 shadow-sm p-4 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-blue-500 flex-shrink-0"></span>
+                        {t('admin.users')}
                     </div>
-                    <div>
-                        <p className="text-sm text-gray-500">{t('admin.users')}</p>
-                        <p className="text-2xl font-bold text-gray-900">{users.length}</p>
-                    </div>
+                    <p className="text-2xl font-bold text-blue-600 mt-1 tabular-nums">{users.length}</p>
+                    <p className="text-xs text-gray-400">{t('admin.roleUser')}</p>
                 </div>
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center">
-                    <div className="p-3 rounded-full bg-emerald-50 text-emerald-600 mr-4">
-                        <User className="w-6 h-6" />
+                <div className="bg-white rounded-xl border border-emerald-100 border-t-2 border-t-emerald-500 shadow-sm p-4 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-emerald-500 flex-shrink-0"></span>
+                        {t('admin.roleComptable')}
                     </div>
-                    <div>
-                        <p className="text-sm text-gray-500">{t('admin.roleComptable')}</p>
-                        <p className="text-2xl font-bold text-gray-900">{comptables.length}</p>
-                    </div>
+                    <p className="text-2xl font-bold text-emerald-600 mt-1 tabular-nums">{comptables.length}</p>
+                    <p className="text-xs text-gray-400">{t('admin.roleComptable')}</p>
                 </div>
             </div>
 
             {/* Users Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                    <h2 className="text-base font-semibold text-gray-900">{t('admin.allUsers')} ({profiles.length})</h2>
+            <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">{t('admin.allUsers')}</h2>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">{profiles.length}</span>
                 </div>
                 {profiles.length === 0 ? (
                     <div className="text-center py-12 text-gray-400 text-sm">No users found.</div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
+                        <table className="min-w-full">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.users')}</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.role')}</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">{t('admin.joined')}</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.actions')}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('admin.users')}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('admin.role')}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide hidden md:table-cell">{t('admin.joined')}</th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{t('admin.actions')}</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody>
                                 {profiles.map(profile => (
                                     <ProfileRow
                                         key={profile.id}

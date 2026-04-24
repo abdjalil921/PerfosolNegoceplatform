@@ -322,19 +322,21 @@ export default function Transports() {
 
             {/* Summary Boxes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="rounded-xl border p-4 bg-cyan-50 border-cyan-100 text-cyan-900">
-                    <p className="text-xs font-semibold uppercase tracking-wider opacity-70 flex items-center gap-1">
-                        <Fuel className="w-3.5 h-3.5" />{t('transports.totalGas')}
-                    </p>
+                <div className="rounded-xl border border-cyan-100 border-t-2 border-t-cyan-500 p-4 flex flex-col gap-1 bg-cyan-50 text-cyan-900">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider opacity-80">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-cyan-500 flex-shrink-0"></span>
+                        {t('transports.totalGas')}
+                    </div>
                     <p className="text-xl font-bold font-mono mt-1">{fmt(totalGas)} <span className="text-sm font-normal opacity-60">MAD</span></p>
-                    <p className="text-xs text-cyan-600 mt-0.5">{filtered.length} route(s)</p>
+                    <p className="text-xs opacity-50 mt-0.5">{filtered.length} route(s)</p>
                 </div>
-                <div className="rounded-xl border p-4 bg-violet-50 border-violet-100 text-violet-900">
-                    <p className="text-xs font-semibold uppercase tracking-wider opacity-70 flex items-center gap-1">
-                        <Truck className="w-3.5 h-3.5" />{t('transports.totalRental')}
-                    </p>
+                <div className="rounded-xl border border-violet-100 border-t-2 border-t-violet-500 p-4 flex flex-col gap-1 bg-violet-50 text-violet-900">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider opacity-80">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-violet-500 flex-shrink-0"></span>
+                        {t('transports.totalRental')}
+                    </div>
                     <p className="text-xl font-bold font-mono mt-1">{fmt(totalRental)} <span className="text-sm font-normal opacity-60">MAD</span></p>
-                    <p className="text-xs text-violet-600 mt-0.5">{filtered.length} route(s)</p>
+                    <p className="text-xs opacity-50 mt-0.5">{filtered.length} route(s)</p>
                 </div>
             </div>
 

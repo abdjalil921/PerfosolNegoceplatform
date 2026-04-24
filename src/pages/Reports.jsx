@@ -137,29 +137,45 @@ export default function Reports() {
 
             {/* Summary Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                    { label: t('reports.totalItems'), value: totalItems, icon: Package, color: 'bg-blue-50 text-primary' },
-                    { label: t('reports.lowStock'), value: lowStockItems.length, icon: AlertTriangle, color: 'bg-yellow-50 text-yellow-600' },
-                    { label: t('reports.outOfStock'), value: outOfStock.length, icon: AlertTriangle, color: 'bg-orange-50 text-orange-600' },
-                    { label: t('reports.negativeStock'), value: negativeStock.length, icon: TrendingDown, color: 'bg-red-50 text-danger' },
-                ].map(({ label, value, icon: Icon, color }) => (
-                    <div key={label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center">
-                        <div className={`p-2.5 rounded-full ${color} mr-3`}>
-                            <Icon className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <p className="text-xs text-gray-500 font-medium">{label}</p>
-                            <p className="text-xl font-bold text-gray-900">{value}</p>
-                        </div>
+                <div className="bg-white rounded-xl border border-blue-100 border-t-2 border-t-blue-500 shadow-sm p-4 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-blue-500 flex-shrink-0"></span>
+                        {t('reports.totalItems')}
                     </div>
-                ))}
+                    <p className="text-2xl font-bold text-gray-900 mt-1 tabular-nums">{totalItems}</p>
+                    <p className="text-xs text-gray-400">{t('dashboard.inventoryItems')}</p>
+                </div>
+                <div className="bg-white rounded-xl border border-amber-100 border-t-2 border-t-amber-500 shadow-sm p-4 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-amber-500 flex-shrink-0"></span>
+                        {t('reports.lowStock')}
+                    </div>
+                    <p className="text-2xl font-bold text-amber-600 mt-1 tabular-nums">{lowStockItems.length}</p>
+                    <p className="text-xs text-gray-400">{t('items.minThreshold')}</p>
+                </div>
+                <div className="bg-white rounded-xl border border-orange-100 border-t-2 border-t-orange-500 shadow-sm p-4 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-orange-500 flex-shrink-0"></span>
+                        {t('reports.outOfStock')}
+                    </div>
+                    <p className="text-2xl font-bold text-orange-600 mt-1 tabular-nums">{outOfStock.length}</p>
+                    <p className="text-xs text-gray-400">{t('items.currentStock')}: 0</p>
+                </div>
+                <div className="bg-white rounded-xl border border-red-100 border-t-2 border-t-red-500 shadow-sm p-4 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-red-500 flex-shrink-0"></span>
+                        {t('reports.negativeStock')}
+                    </div>
+                    <p className="text-2xl font-bold text-red-600 mt-1 tabular-nums">{negativeStock.length}</p>
+                    <p className="text-xs text-gray-400">{t('reports.negative')}</p>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 {/* Category Breakdown */}
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-                    <h2 className="text-base font-semibold text-gray-900 mb-4">{t('reports.stockByCategory')}</h2>
+                <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+                    <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">{t('reports.stockByCategory')}</h2>
                     {categoryBreakdown.length === 0 ? (
                         <p className="text-sm text-gray-400 text-center py-6">{t('reports.noCategories')}</p>
                     ) : (
@@ -168,11 +184,11 @@ export default function Reports() {
                                 <li key={cat.name}>
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="font-medium text-gray-700">{cat.name}</span>
-                                        <span className="text-gray-500">{cat.count} {cat.count !== 1 ? t('common.items') : t('transactions.item')} · <span className={`font-bold ${cat.totalStock < 0 ? 'text-danger' : 'text-gray-700'}`}>{cat.totalStock} total</span></span>
+                                        <span className="text-gray-400 text-xs">{cat.count} {cat.count !== 1 ? t('common.items') : t('transactions.item')} · <span className={`font-bold ${cat.totalStock < 0 ? 'text-red-600' : 'text-gray-600'}`}>{cat.totalStock} total</span></span>
                                     </div>
-                                    <div className="w-full bg-gray-100 rounded-full h-2 mt-1.5">
+                                    <div className="w-full bg-gray-100 rounded-full h-1.5 mt-1.5">
                                         <div
-                                            className={`h-2 rounded-full ${cat.totalStock < 0 ? 'bg-red-400' : 'bg-primary'}`}
+                                            className={`h-1.5 rounded-full ${cat.totalStock < 0 ? 'bg-red-400' : 'bg-primary'}`}
                                             style={{ width: `${Math.min(100, Math.max(5, (cat.count / totalItems) * 100))}%` }}
                                         />
                                     </div>
@@ -183,8 +199,8 @@ export default function Reports() {
                 </div>
 
                 {/* Top Moved Items (filtered by date) */}
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-                    <h2 className="text-base font-semibold text-gray-900 mb-1">{t('reports.mostMoved')}</h2>
+                <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+                    <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-1">{t('reports.mostMoved')}</h2>
                     <p className="text-xs text-gray-400 mb-4">
                         {dateRange ? t('reports.selectedPeriod') : t('reports.allTime')} · {t('reports.byQuantity')}
                     </p>
@@ -194,11 +210,11 @@ export default function Reports() {
                         <ul className="space-y-3">
                             {topItems.map((item, idx) => (
                                 <li key={item.name} className="flex items-center gap-3">
-                                    <span className="w-6 text-center text-xs font-bold text-gray-400">#{idx + 1}</span>
+                                    <span className="w-6 text-center text-xs font-bold text-gray-300">#{idx + 1}</span>
                                     <div className="flex-1">
                                         <div className="flex justify-between text-sm">
                                             <span className="font-medium text-gray-700 truncate max-w-xs">{item.name}</span>
-                                            <span className="font-bold text-primary ml-2">{item.qty} {t('common.items')}</span>
+                                            <span className="font-bold text-primary ml-2 tabular-nums">{item.qty} {t('common.items')}</span>
                                         </div>
                                         <div className="w-full bg-gray-100 rounded-full h-1.5 mt-1">
                                             <div
@@ -215,13 +231,13 @@ export default function Reports() {
             </div>
 
             {/* Detailed Stock table with category filter */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <h2 className="text-base font-semibold text-gray-900">{t('reports.stockLevels')}</h2>
+                    <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">{t('reports.stockLevels')}</h2>
                     <select
                         value={categoryFilter}
                         onChange={e => setCategoryFilter(e.target.value)}
-                        className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary text-gray-600"
                     >
                         {categories.map(c => (
                             <option key={c} value={c}>{c === 'all' ? t('reports.allCategories') : c}</option>
@@ -230,39 +246,51 @@ export default function Reports() {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-full">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('transactions.item')}</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">{t('items.category')}</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('items.currentStock')}</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('transactions.item')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide hidden sm:table-cell">{t('items.category')}</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{t('items.currentStock')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            {filteredItems.map(item => {
-                                const isLow = item.current_stock <= item.min_stock_threshold && item.current_stock >= 0;
+                        <tbody>
+                            {filteredItems.map((item, idx) => {
+                                const isLow = item.current_stock <= item.min_stock_threshold && item.current_stock > 0;
                                 const isOut = item.current_stock <= 0;
                                 const isNeg = item.current_stock < 0;
                                 const statusLabel = isNeg ? t('reports.negative') : isOut ? t('reports.outOfStockBadge') : isLow ? t('reports.lowStockBadge') : t('reports.ok');
                                 const statusClass = isNeg
-                                    ? 'bg-red-100 text-red-700'
+                                    ? 'bg-red-100 text-red-700 border border-red-200'
                                     : isOut
-                                        ? 'bg-orange-100 text-orange-700'
+                                        ? 'bg-orange-100 text-orange-700 border border-orange-200'
                                         : isLow
-                                            ? 'bg-yellow-100 text-yellow-700'
-                                            : 'bg-green-100 text-green-700';
+                                            ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                                            : 'bg-green-100 text-green-700 border border-green-200';
+                                const rowAccent = isNeg
+                                    ? 'border-l-[3px] border-l-red-500'
+                                    : isOut
+                                        ? 'border-l-[3px] border-l-orange-500'
+                                        : isLow
+                                            ? 'border-l-[3px] border-l-amber-400'
+                                            : 'border-l-[3px] border-l-transparent';
                                 return (
-                                    <tr key={item.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-3 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                                    <tr key={item.id} className={`hover:bg-gray-50/70 transition-colors ${rowAccent} ${idx < filteredItems.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                                        <td className="px-6 py-3.5 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-gray-800">{item.name}</div>
                                             <StockBar current={item.current_stock} threshold={item.min_stock_threshold} />
                                         </td>
-                                        <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">{item.category}</td>
-                                        <td className={`px-6 py-3 whitespace-nowrap text-sm font-bold text-right ${getStockColor(item.current_stock)}`}>
-                                            {item.current_stock} {t(`units.${item.unit}`, item.unit)}
+                                        <td className="px-6 py-3.5 whitespace-nowrap hidden sm:table-cell">
+                                            {item.category && (
+                                                <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600">{item.category}</span>
+                                            )}
                                         </td>
-                                        <td className="px-6 py-3 whitespace-nowrap">
+                                        <td className="px-6 py-3.5 whitespace-nowrap text-sm font-bold text-right tabular-nums">
+                                            <span className={getStockColor(item.current_stock)}>{item.current_stock}</span>
+                                            <span className="text-gray-400 font-normal ml-1 text-xs">{t(`units.${item.unit}`, item.unit)}</span>
+                                        </td>
+                                        <td className="px-6 py-3.5 whitespace-nowrap">
                                             <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusClass}`}>
                                                 {statusLabel}
                                             </span>

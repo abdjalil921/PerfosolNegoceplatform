@@ -53,58 +53,67 @@ export default function Layout() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
-            {/* Sidebar for desktop */}
-            <div className={`hidden md:flex ${sidebarW} md:flex-col md:fixed md:inset-y-0 z-30 bg-white border-r border-gray-200 transition-all duration-200`}>
+            {/* ── Desktop Sidebar ── */}
+            <div className={`hidden md:flex ${sidebarW} md:flex-col md:fixed md:inset-y-0 z-30 bg-gray-900 transition-all duration-200`}>
                 <div className="flex-1 flex flex-col min-h-0">
-                    {/* Header */}
-                    <div className="flex items-center h-14 flex-shrink-0 px-3 bg-primary text-white">
-                        <div className="bg-white p-1 rounded-md shadow-sm border border-gray-100 flex-shrink-0">
+
+                    {/* Logo / Brand */}
+                    <div className={`flex items-center h-16 flex-shrink-0 px-3 border-b border-white/10 ${collapsed ? 'justify-center' : 'gap-2.5'}`}>
+                        <div className="bg-white p-1.5 rounded-lg flex-shrink-0">
                             <img src={logoSrc} alt={`${displayName} Logo`} className="h-6 w-auto object-contain" />
                         </div>
                         {!collapsed && (
-                            <span className="font-bold text-base tracking-tight ml-2 flex-1 truncate" style={{ color: '#f8d31a' }}>{displayName}</span>
+                            <span className="font-bold text-sm tracking-tight flex-1 truncate text-amber-400">{displayName}</span>
                         )}
                         {!collapsed && (
                             <button
                                 onClick={toggleLang}
-                                className="flex items-center gap-1 text-xs font-semibold bg-white/20 hover:bg-white/30 px-2 py-1 rounded-md transition-colors"
+                                className="flex items-center gap-1 text-[10px] font-bold bg-white/10 hover:bg-white/20 px-2 py-1 rounded-md transition-colors text-gray-300 hover:text-white flex-shrink-0"
                                 title="Switch language"
                             >
-                                <Globe className="w-3.5 h-3.5" />
+                                <Globe className="w-3 h-3" />
                                 {i18n.language === 'en' ? 'FR' : 'EN'}
                             </button>
                         )}
                     </div>
 
                     {/* Nav */}
-                    <div className="flex-1 flex flex-col overflow-y-auto pt-3 pb-2">
-                        <nav className="flex-1 px-1.5 space-y-0.5">
+                    <div className="flex-1 flex flex-col overflow-y-auto py-3">
+                        <nav className="flex-1 px-2 space-y-0.5">
                             {navigation.map((item) => {
                                 const Icon = item.icon;
+                                const active = isActive(item.href);
                                 return (
                                     <Link
                                         key={item.href}
                                         to={item.href}
                                         title={collapsed ? item.name : undefined}
-                                        className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${isActive(item.href)
-                                            ? 'bg-blue-50 text-primary'
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                            } ${collapsed ? 'justify-center' : ''}`}
+                                        className={`group flex items-center px-2.5 py-2 text-sm font-medium rounded-lg transition-all duration-150 relative ${
+                                            active
+                                                ? 'bg-white/10 text-white'
+                                                : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
+                                        } ${collapsed ? 'justify-center' : ''}`}
                                     >
-                                        <Icon className={`h-5 w-5 flex-shrink-0 ${isActive(item.href) ? 'text-primary' : 'text-gray-400 group-hover:text-gray-500'} ${collapsed ? '' : 'mr-3'}`} />
-                                        {!collapsed && item.name}
+                                        {/* Active left accent */}
+                                        {active && (
+                                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
+                                        )}
+                                        <Icon className={`h-4.5 w-4.5 flex-shrink-0 transition-colors ${active ? 'text-primary' : 'text-gray-500 group-hover:text-gray-300'} ${collapsed ? '' : 'mr-3'}`} style={{ width: '1.125rem', height: '1.125rem' }} />
+                                        {!collapsed && (
+                                            <span className="truncate">{item.name}</span>
+                                        )}
                                     </Link>
                                 );
                             })}
                         </nav>
                     </div>
 
-                    {/* Collapse toggle + user footer */}
-                    <div className="flex-shrink-0 border-t border-gray-200">
-                        {/* Toggle button */}
+                    {/* Footer */}
+                    <div className="flex-shrink-0 border-t border-white/10">
+                        {/* Collapse toggle */}
                         <button
                             onClick={() => setCollapsed(c => !c)}
-                            className="w-full flex items-center justify-center py-2 text-gray-400 hover:text-primary hover:bg-gray-50 transition-colors text-xs gap-1"
+                            className="w-full flex items-center justify-center py-2 text-gray-500 hover:text-gray-200 hover:bg-white/5 transition-colors text-xs gap-1"
                         >
                             {collapsed
                                 ? <ChevronRight className="w-4 h-4" />
@@ -112,33 +121,33 @@ export default function Layout() {
                             }
                         </button>
 
-                        {/* User section */}
+                        {/* User section — expanded */}
                         {!collapsed && (
-                            <div className="px-3 pb-3 pt-1">
-                                <div className="flex items-center gap-2 mb-2">
+                            <div className="px-3 pb-3 pt-1 space-y-2">
+                                <div className="flex items-center gap-2.5">
                                     <Link to="/profile" className="inline-flex h-8 w-8 rounded-full bg-primary items-center justify-center text-white font-bold text-sm hover:opacity-80 transition-opacity flex-shrink-0">
                                         {profile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                                     </Link>
-                                    <div className="min-w-0">
-                                        <Link to="/profile" className="text-xs font-medium text-gray-700 hover:text-primary truncate block transition-colors">
+                                    <div className="min-w-0 flex-1">
+                                        <Link to="/profile" className="text-xs font-semibold text-gray-200 hover:text-white truncate block transition-colors">
                                             {profile?.full_name || t('nav.profile')}
                                         </Link>
-                                        <p className="text-xs text-gray-400 capitalize">
+                                        <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-white/10 text-gray-400">
                                             {profile?.role === 'admin' ? t('admin.roleAdmin') : t('admin.roleUser')}
-                                        </p>
+                                        </span>
                                     </div>
                                     <button
                                         onClick={toggleLang}
-                                        className="ml-auto flex items-center gap-1 text-xs font-semibold text-gray-400 hover:text-primary px-1.5 py-1 rounded-md transition-colors"
+                                        className="flex items-center gap-1 text-[10px] font-bold text-gray-500 hover:text-gray-200 px-1.5 py-1 rounded-md transition-colors flex-shrink-0"
                                         title="Switch language"
                                     >
-                                        <Globe className="w-3.5 h-3.5" />
+                                        <Globe className="w-3 h-3" />
                                         {i18n.language === 'en' ? 'FR' : 'EN'}
                                     </button>
                                 </div>
                                 <button
                                     onClick={signOut}
-                                    className="w-full flex items-center justify-center px-3 py-1.5 text-xs font-medium rounded-md text-danger bg-red-50 hover:bg-red-100 transition-colors"
+                                    className="w-full flex items-center justify-center px-3 py-1.5 text-xs font-medium rounded-lg text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors border border-red-500/20"
                                 >
                                     <LogOut className="h-3.5 w-3.5 mr-1.5" />
                                     {t('nav.signOut')}
@@ -146,14 +155,14 @@ export default function Layout() {
                             </div>
                         )}
 
-                        {/* Collapsed: just icon buttons */}
+                        {/* Collapsed: icon buttons */}
                         {collapsed && (
                             <div className="flex flex-col items-center gap-1 pb-3 pt-1">
                                 <Link to="/profile" className="inline-flex h-8 w-8 rounded-full bg-primary items-center justify-center text-white font-bold text-sm hover:opacity-80 transition-opacity" title={profile?.full_name || 'Profile'}>
                                     {profile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                                 </Link>
                                 <button onClick={signOut} title={t('nav.signOut')}
-                                    className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                                    className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-md transition-colors">
                                     <LogOut className="h-4 w-4" />
                                 </button>
                             </div>
@@ -162,54 +171,63 @@ export default function Layout() {
                 </div>
             </div>
 
-            {/* Mobile header */}
-            <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-primary text-white flex items-center justify-between h-14 px-4 shadow-sm">
-                <div className="flex items-center">
-                    <div className="bg-white p-1.5 rounded-md mr-3 shadow-sm border border-gray-100 flex-shrink-0">
-                        <img src={logoSrc} alt={`${displayName} Logo`} className="h-6 w-auto object-contain" />
+            {/* ── Mobile header ── */}
+            <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-gray-900 text-white flex items-center justify-between h-14 px-4 shadow-sm border-b border-white/10">
+                <div className="flex items-center gap-2.5">
+                    <div className="bg-white p-1.5 rounded-lg shadow-sm flex-shrink-0">
+                        <img src={logoSrc} alt={`${displayName} Logo`} className="h-5 w-auto object-contain" />
                     </div>
-                    <span className="font-bold text-lg tracking-tight" style={{ color: '#f8d31a' }}>{displayName}</span>
+                    <span className="font-bold text-base tracking-tight text-amber-400">{displayName}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button onClick={toggleLang} className="flex items-center gap-1 text-xs font-semibold bg-white/20 hover:bg-white/30 px-2 py-1 rounded-md transition-colors">
+                    <button onClick={toggleLang} className="flex items-center gap-1 text-[10px] font-bold bg-white/10 hover:bg-white/20 px-2 py-1 rounded-md transition-colors text-gray-300">
                         <Globe className="w-3.5 h-3.5" />
                         {i18n.language === 'en' ? 'FR' : 'EN'}
                     </button>
-                    <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-md hover:brightness-110 focus:outline-none">
-                        {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                    <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg hover:bg-white/10 focus:outline-none transition-colors">
+                        {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                     </button>
                 </div>
             </div>
 
-            {/* Mobile menu */}
+            {/* ── Mobile menu ── */}
             {mobileMenuOpen && (
-                <div className="md:hidden fixed inset-0 z-30 pt-14 flex flex-col bg-white">
+                <div className="md:hidden fixed inset-0 z-30 pt-14 flex flex-col bg-gray-900">
                     <div className="flex-1 pt-4 pb-4 overflow-y-auto">
-                        <div className="px-4 flex items-center mb-5">
-                            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg">
+                        {/* User profile row */}
+                        <div className="px-4 flex items-center gap-3 mb-5 pb-4 border-b border-white/10">
+                            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                                 {profile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                             </div>
-                            <div className="ml-3">
-                                <p className="text-base font-medium text-gray-800">{profile?.full_name || 'User'}</p>
-                                <p className="text-sm font-medium text-gray-500 capitalize">{profile?.role || 'user'}</p>
+                            <div className="min-w-0">
+                                <p className="text-sm font-semibold text-gray-100 truncate">{profile?.full_name || 'User'}</p>
+                                <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-white/10 text-gray-400">
+                                    {profile?.role || 'user'}
+                                </span>
                             </div>
                         </div>
-                        <nav className="px-2 space-y-1">
+
+                        <nav className="px-2 space-y-0.5">
                             {navigation.map((item) => {
                                 const Icon = item.icon;
+                                const active = isActive(item.href);
                                 return (
                                     <Link key={item.href} to={item.href} onClick={() => setMobileMenuOpen(false)}
-                                        className={`group flex items-center px-4 py-3 text-base font-medium rounded-md ${isActive(item.href) ? 'bg-blue-50 text-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
-                                        <Icon className={`mr-4 h-6 w-6 flex-shrink-0 ${isActive(item.href) ? 'text-primary' : 'text-gray-400'}`} />
+                                        className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg relative transition-all ${
+                                            active ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
+                                        }`}>
+                                        {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />}
+                                        <Icon className={`mr-3 h-5 w-5 flex-shrink-0 ${active ? 'text-primary' : 'text-gray-500'}`} />
                                         {item.name}
                                     </Link>
                                 );
                             })}
                         </nav>
-                        <div className="px-4 mt-6">
+
+                        <div className="px-4 mt-5">
                             <button onClick={() => { setMobileMenuOpen(false); signOut(); }}
-                                className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-danger bg-red-50 hover:bg-red-100">
-                                <LogOut className="h-5 w-5 mr-3" />
+                                className="w-full flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-lg text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors border border-red-500/20">
+                                <LogOut className="h-4 w-4 mr-2" />
                                 {t('nav.signOut')}
                             </button>
                         </div>

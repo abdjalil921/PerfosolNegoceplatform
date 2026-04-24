@@ -65,36 +65,41 @@ export default function TransactionList({ transactions }) {
             </div>
 
             {/* ─── Desktop table (≥ sm) ─── */}
-            <div className="hidden sm:block overflow-x-auto bg-white shadow rounded-lg border border-gray-200">
-                <table className="min-w-full divide-y divide-gray-200">
+            <div className="hidden sm:block overflow-x-auto bg-white shadow-sm rounded-xl border border-border">
+                <table className="min-w-full">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('transactions.date')}</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('transactions.item')}</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('transactions.type')}</th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('transactions.quantity')}</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">{t('transactions.notes')}</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">{t('transactions.user')}</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('transactions.date')}</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('transactions.item')}</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('transactions.type')}</th>
+                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{t('transactions.quantity')}</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide hidden md:table-cell">{t('transactions.notes')}</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide hidden lg:table-cell">{t('transactions.user')}</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {transactions.map((tx) => {
+                    <tbody>
+                        {transactions.map((tx, idx) => {
                             const isIncoming = tx.type === 'incoming';
+                            const rowAccent = isIncoming
+                                ? 'border-l-[3px] border-l-green-500'
+                                : 'border-l-[3px] border-l-red-400';
                             return (
-                                <tr key={tx.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <tr key={tx.id} className={`hover:bg-gray-50/70 transition-colors ${rowAccent} ${idx < transactions.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-500 tabular-nums">
                                         {formatDate(tx.transaction_date)}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">
+                                    <td className="px-6 py-3.5 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-gray-800">
                                             {tx.item_name || tx.items?.name || t('transactions.unknownItem')}
                                         </div>
-                                        <div className="text-sm text-gray-500">
-                                            {tx.item_unit || tx.items?.unit || ''}
-                                        </div>
+                                        {(tx.item_unit || tx.items?.unit) && (
+                                            <div className="text-xs text-gray-400">
+                                                {tx.item_unit || tx.items?.unit}
+                                            </div>
+                                        )}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isIncoming ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                    <td className="px-6 py-3.5 whitespace-nowrap">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${isIncoming ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
                                             {isIncoming ? (
                                                 <ArrowDownRight className="w-3 h-3 mr-1" />
                                             ) : (
@@ -103,16 +108,16 @@ export default function TransactionList({ transactions }) {
                                             {t(`transactions.${tx.type}`)}
                                         </span>
                                     </td>
-                                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-bold text-right ${isIncoming ? 'text-success' : 'text-danger'}`}>
+                                    <td className={`px-6 py-3.5 whitespace-nowrap text-sm font-bold text-right tabular-nums ${isIncoming ? 'text-green-600' : 'text-red-600'}`}>
                                         {isIncoming ? '+' : '-'}{tx.quantity}
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500 hidden md:table-cell max-w-xs truncate">
-                                        {tx.notes || '-'}
+                                    <td className="px-6 py-3.5 text-sm text-gray-400 hidden md:table-cell max-w-xs truncate">
+                                        {tx.notes || <span className="text-gray-300">—</span>}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">
-                                        <div className="flex items-center">
-                                            <User className="h-4 w-4 mr-1 text-gray-400" />
-                                            {tx.profiles?.full_name || t('transactions.unknownUser')}
+                                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">
+                                        <div className="flex items-center gap-1">
+                                            <User className="h-3.5 w-3.5 text-gray-300" />
+                                            <span className="text-gray-500">{tx.profiles?.full_name || t('transactions.unknownUser')}</span>
                                         </div>
                                     </td>
                                 </tr>

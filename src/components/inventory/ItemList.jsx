@@ -63,62 +63,68 @@ export default function ItemList({ items, onItemClick, onEditClick }) {
             </div>
 
             {/* ─── Desktop table (≥ sm) ─── */}
-            <div className="hidden sm:block overflow-x-auto bg-white shadow rounded-lg border border-gray-200">
-                <table className="min-w-full divide-y divide-gray-200">
+            <div className="hidden sm:block overflow-x-auto bg-white shadow-sm rounded-xl border border-border">
+                <table className="min-w-full">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('items.name')}</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">{t('items.category')}</th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('items.currentStock')}</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">{t('items.unit')}</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('items.name')}</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide hidden sm:table-cell">{t('items.category')}</th>
+                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{t('items.currentStock')}</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide hidden md:table-cell">{t('items.unit')}</th>
                             <th scope="col" className="relative px-6 py-3">
                                 <span className="sr-only">Actions</span>
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {items.map((item) => {
+                    <tbody>
+                        {items.map((item, idx) => {
                             const lowStock = isLowStock(item.current_stock, item.min_stock_threshold);
+                            const outOfStock = item.current_stock <= 0;
+                            const stockBadge = outOfStock
+                                ? 'bg-red-50 text-red-700 border border-red-200'
+                                : lowStock
+                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                : 'bg-green-50 text-green-700 border border-green-200';
                             return (
-                                <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg bg-blue-50 text-primary font-bold">
+                                <tr key={item.id} className={`hover:bg-gray-50/70 transition-colors ${idx < items.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                                    <td className="px-6 py-3.5 whitespace-nowrap">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex-shrink-0 h-9 w-9 flex items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-sm">
                                                 {item.name.charAt(0).toUpperCase()}
                                             </div>
-                                            <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                                                <div className="text-sm text-gray-500 truncate w-40 sm:w-auto">{item.description}</div>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-800">{item.name}</p>
+                                                {item.description && <p className="text-xs text-gray-400 truncate max-w-[200px]">{item.description}</p>}
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                            {item.category}
+                                    <td className="px-6 py-3.5 whitespace-nowrap hidden sm:table-cell">
+                                        {item.category && (
+                                            <span className="px-2.5 py-0.5 inline-flex text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+                                                {item.category}
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-3.5 whitespace-nowrap text-right">
+                                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold tabular-nums ${stockBadge}`}>
+                                            {lowStock && !outOfStock && <AlertCircle className="w-3 h-3 flex-shrink-0" />}
+                                            {item.current_stock}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <div className="flex items-center justify-end">
-                                            {lowStock && <AlertCircle className="w-4 h-4 text-orange-500 mr-2" />}
-                                            <span className={`text-sm font-bold ${getStockColor(item.current_stock)}`}>
-                                                {item.current_stock}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-400 hidden md:table-cell">
                                         {t(`units.${item.unit}`, item.unit)}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td className="px-6 py-3.5 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="flex items-center justify-end gap-2">
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onEditClick(item); }}
-                                                className="px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                                                className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
                                             >
                                                 {t('items.edit')}
                                             </button>
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onItemClick(item); }}
-                                                className="px-3 py-1.5 border border-primary rounded-md text-sm text-primary hover:bg-primary hover:text-white transition-colors"
+                                                className="px-3 py-1.5 border border-primary/30 rounded-lg text-xs font-medium text-primary hover:bg-primary hover:text-white transition-colors"
                                             >
                                                 {t('items.manageStock')}
                                             </button>

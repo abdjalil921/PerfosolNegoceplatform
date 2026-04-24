@@ -136,35 +136,32 @@ export default function Dashboard() {
             </div>
 
             {/* ── Stats Cards ── */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
-                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100 flex items-center">
-                    <div className="p-2 sm:p-3 rounded-full bg-blue-50 text-primary mr-3 sm:mr-4">
-                        <Package className="w-5 h-5 sm:w-6 sm:h-6" />
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                <div className="bg-white rounded-xl border border-blue-100 border-t-2 border-t-blue-500 shadow-sm p-4 sm:p-5 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-blue-500 flex-shrink-0"></span>
+                        {t('dashboard.totalItems')}
                     </div>
-                    <div>
-                        <p className="text-xs sm:text-sm font-medium text-gray-500">{t('dashboard.totalItems')}</p>
-                        <p className="text-xl sm:text-2xl font-bold text-gray-900">{totalItems}</p>
-                    </div>
+                    <p className="text-2xl font-bold text-gray-900 mt-1 tabular-nums">{totalItems}</p>
+                    <p className="text-xs text-gray-400">{t('dashboard.inventoryItems')}</p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100 flex items-center">
-                    <div className="p-2 sm:p-3 rounded-full bg-yellow-50 text-yellow-600 mr-3 sm:mr-4">
-                        <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6" />
+                <div className="bg-white rounded-xl border border-amber-100 border-t-2 border-t-amber-500 shadow-sm p-4 sm:p-5 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-amber-500 flex-shrink-0"></span>
+                        {t('dashboard.lowStock')}
                     </div>
-                    <div>
-                        <p className="text-xs sm:text-sm font-medium text-gray-500">{t('dashboard.lowStock')}</p>
-                        <p className="text-xl sm:text-2xl font-bold text-gray-900">{lowStockList.length}</p>
-                    </div>
+                    <p className="text-2xl font-bold text-amber-600 mt-1 tabular-nums">{lowStockList.length}</p>
+                    <p className="text-xs text-gray-400">{t('items.minThreshold')}</p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100 flex items-center col-span-2 md:col-span-1">
-                    <div className="p-2 sm:p-3 rounded-full bg-red-50 text-danger mr-3 sm:mr-4">
-                        <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6" />
+                <div className="bg-white rounded-xl border border-red-100 border-t-2 border-t-red-500 shadow-sm p-4 sm:p-5 flex flex-col gap-1 col-span-2 md:col-span-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-red-500 flex-shrink-0"></span>
+                        {t('dashboard.outOfStock')}
                     </div>
-                    <div>
-                        <p className="text-xs sm:text-sm font-medium text-gray-500">{t('dashboard.outOfStock')}</p>
-                        <p className="text-xl sm:text-2xl font-bold text-gray-900">{outOfStockItems}</p>
-                    </div>
+                    <p className="text-2xl font-bold text-red-600 mt-1 tabular-nums">{outOfStockItems}</p>
+                    <p className="text-xs text-gray-400">{t('items.currentStock')}: 0</p>
                 </div>
             </div>
 
@@ -250,12 +247,14 @@ export default function Dashboard() {
 
             {/* ── Inventory List ── */}
             <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-3">
-                    {t('dashboard.inventoryItems')}
-                    <span className="ml-2 text-sm font-normal text-gray-400">
-                        ({filteredItems.length}{filteredItems.length !== items.length ? ` of ${items.length}` : ''})
-                    </span>
-                </h2>
+                <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-base font-semibold text-gray-700">
+                        {t('dashboard.inventoryItems')}
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                            {filteredItems.length}{filteredItems.length !== items.length ? ` / ${items.length}` : ''}
+                        </span>
+                    </h2>
+                </div>
                 <ItemList
                     items={filteredItems}
                     onItemClick={(item) => setSelectedItem(item)}

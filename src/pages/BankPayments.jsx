@@ -368,29 +368,30 @@ export default function BankPayments() {
 
             {/* Summary Boxes */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="rounded-xl border p-4 flex flex-col gap-1 bg-emerald-50 border-emerald-100 text-emerald-800">
+                <div className="rounded-xl border border-emerald-100 border-t-2 border-t-emerald-500 p-4 flex flex-col gap-1 bg-emerald-50 text-emerald-800">
                     <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider opacity-80">
-                        <TrendingUp className="w-3.5 h-3.5" />
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-emerald-500 flex-shrink-0"></span>
                         {t('bank.totalEntrees')}
                     </div>
                     <p className="text-xl font-bold font-mono mt-1">+{fmt(totalEntrees)} <span className="text-sm font-normal opacity-70">MAD</span></p>
+                    <p className="text-xs opacity-50 mt-0.5">{filtered.length} transaction(s)</p>
                 </div>
-                <div className="rounded-xl border p-4 flex flex-col gap-1 bg-red-50 border-red-100 text-red-800">
+                <div className="rounded-xl border border-red-100 border-t-2 border-t-red-500 p-4 flex flex-col gap-1 bg-red-50 text-red-800">
                     <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider opacity-80">
-                        <TrendingDown className="w-3.5 h-3.5" />
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-red-400 flex-shrink-0"></span>
                         {t('bank.totalSorties')}
                     </div>
                     <p className="text-xl font-bold font-mono mt-1">-{fmt(totalSorties)} <span className="text-sm font-normal opacity-70">MAD</span></p>
                 </div>
-                <div className={`rounded-xl border p-4 flex flex-col gap-1 ${balancePositive ? 'bg-green-50 border-green-200 text-green-900' : 'bg-red-50 border-red-200 text-red-900'}`}>
+                <div className={`rounded-xl border border-t-2 p-4 flex flex-col gap-1 ${balancePositive ? 'border-green-200 border-t-green-600 bg-green-50 text-green-900' : 'border-red-200 border-t-red-600 bg-red-50 text-red-900'}`}>
                     <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider opacity-80">
-                        {balancePositive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                        <span className={`inline-block w-[7px] h-[7px] rounded-full flex-shrink-0 ${balancePositive ? 'bg-green-500' : 'bg-red-500'}`}></span>
                         {t('bank.balance')}
                     </div>
-                    <p className="text-[11px] opacity-60">{balancePositive ? t('bank.balancePositive') : t('bank.balanceNegative')}</p>
                     <p className={`text-xl font-bold font-mono mt-1 ${balancePositive ? 'text-green-700' : 'text-red-700'}`}>
                         {balancePositive ? '+' : ''}{fmt(balance)} <span className="text-sm font-normal opacity-70">MAD</span>
                     </p>
+                    <p className="text-[11px] opacity-60">{balancePositive ? t('bank.balancePositive') : t('bank.balanceNegative')}</p>
                 </div>
             </div>
 
@@ -618,26 +619,29 @@ export default function BankPayments() {
                     </div>
 
                     {/* Desktop Table */}
-                    <div className="hidden sm:block bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="hidden sm:block bg-white rounded-xl border border-border shadow-sm overflow-hidden">
                         <HScrollWrapper>
-                            <table className="min-w-full divide-y divide-gray-100">
+                            <table className="min-w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('bank.transactionDate')}</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('common.receiptNumber')}</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('bank.libelle')}</th>
-                                        <th className="px-4 py-3 text-right text-xs font-semibold text-emerald-600 uppercase tracking-wider">{t('bank.entrees')}</th>
-                                        <th className="px-4 py-3 text-right text-xs font-semibold text-red-600 uppercase tracking-wider">{t('bank.sorties')}</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('sales.paymentDate')}</th>
-                                        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('common.edit')}/{t('common.delete')}</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('bank.transactionDate')}</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('common.receiptNumber')}</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('bank.libelle')}</th>
+                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{t('bank.entrees')}</th>
+                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{t('bank.sorties')}</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.paymentDate')}</th>
+                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wide">{t('common.edit')}/{t('common.delete')}</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {filtered.map(tx => (
-                                        <tr key={tx.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">{fmtDate(tx.transaction_date)}</td>
-                                            <td className="px-4 py-3 text-sm font-mono text-gray-500 whitespace-nowrap">{tx.receipt_number || '—'}</td>
-                                            <td className="px-4 py-3 text-sm text-gray-900 max-w-[300px] truncate">{tx.libelle || '—'}</td>
+                                <tbody>
+                                    {filtered.map((tx, idx) => {
+                                        const status = getPaymentStatus(tx.payment_date);
+                                        const rowAccent = status === 'paid' ? 'border-l-[3px] border-l-green-600' : status === 'unpaid' ? 'border-l-[3px] border-l-orange-500' : status === 'pending' ? 'border-l-[3px] border-l-blue-500' : '';
+                                        return (
+                                        <tr key={tx.id} className={`hover:bg-gray-50 transition-colors ${rowAccent} ${idx < filtered.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                                            <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap tabular-nums">{fmtDate(tx.transaction_date)}</td>
+                                            <td className="px-4 py-3 text-sm font-mono text-gray-400 whitespace-nowrap">{tx.receipt_number || '—'}</td>
+                                            <td className="px-4 py-3 text-sm font-medium text-gray-700 max-w-[300px] truncate">{tx.libelle || '—'}</td>
                                             <td className="px-4 py-3 text-sm text-right font-mono font-semibold text-emerald-700 whitespace-nowrap">
                                                 {Number(tx.entrees) > 0 ? `+${fmt(tx.entrees)}` : '—'}
                                             </td>
@@ -669,7 +673,8 @@ export default function BankPayments() {
                                                 ) : null}
                                             </td>
                                         </tr>
-                                    ))}
+                                        );
+                                    })}
                                 </tbody>
                                 {/* Totals footer */}
                                 <tfoot className="bg-gray-50 border-t-2 border-gray-200">

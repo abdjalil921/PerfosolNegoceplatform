@@ -86,31 +86,63 @@ export default function Transactions() {
                 </button>
             </div>
 
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="rounded-xl border border-gray-200 border-t-2 border-t-gray-400 p-4 flex flex-col gap-1 bg-gray-50">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-gray-400 flex-shrink-0"></span>
+                        {t('transactions.title')}
+                    </div>
+                    <p className="text-2xl font-bold text-gray-800 mt-1 tabular-nums">{filteredTransactions.length}</p>
+                    <p className="text-xs text-gray-400">{t('transactions.subtitle')}</p>
+                </div>
+                <div className="rounded-xl border border-green-100 border-t-2 border-t-green-500 p-4 flex flex-col gap-1 bg-green-50">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-green-700 opacity-80">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-green-500 flex-shrink-0"></span>
+                        {t('transactions.incomingOnly')}
+                    </div>
+                    <p className="text-2xl font-bold text-green-700 mt-1 tabular-nums">
+                        {filteredTransactions.filter(tx => tx.type === 'incoming').length}
+                    </p>
+                    <p className="text-xs text-green-600 opacity-70">{t('transactions.incoming')}</p>
+                </div>
+                <div className="rounded-xl border border-red-100 border-t-2 border-t-red-500 p-4 flex flex-col gap-1 bg-red-50">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-red-700 opacity-80">
+                        <span className="inline-block w-[7px] h-[7px] rounded-full bg-red-500 flex-shrink-0"></span>
+                        {t('transactions.outgoingOnly')}
+                    </div>
+                    <p className="text-2xl font-bold text-red-700 mt-1 tabular-nums">
+                        {filteredTransactions.filter(tx => tx.type === 'outgoing').length}
+                    </p>
+                    <p className="text-xs text-red-600 opacity-70">{t('transactions.outgoing')}</p>
+                </div>
+            </div>
+
             {/* Date filter */}
-            <div className="bg-white p-4 shadow-sm rounded-lg border border-gray-100">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{t('transactions.filterByDate')}</p>
+            <div className="bg-white p-4 shadow-sm rounded-xl border border-border">
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{t('transactions.filterByDate')}</p>
                 <DateRangeFilter onChange={setDateRange} />
             </div>
 
             {/* Search & Type filters */}
-            <div className="bg-white p-4 shadow-sm rounded-lg border border-gray-100 flex flex-col sm:flex-row gap-4">
+            <div className="bg-white p-4 shadow-sm rounded-xl border border-border flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search className="h-5 w-5 text-gray-400" />
+                        <Search className="h-4 w-4 text-gray-400" />
                     </div>
                     <input
                         type="text"
-                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                        className="block w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-gray-700"
                         placeholder={t('transactions.searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="sm:w-48">
+                <div className="sm:w-44">
                     <select
                         value={typeFilter}
                         onChange={(e) => setTypeFilter(e.target.value)}
-                        className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-lg border"
+                        className="block w-full px-3 py-2 text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-gray-600"
                     >
                         <option value="all">{t('transactions.allTypes')}</option>
                         <option value="incoming">{t('transactions.incomingOnly')}</option>
@@ -120,7 +152,7 @@ export default function Transactions() {
                 <button
                     onClick={() => setSortOrder(o => o === 'desc' ? 'asc' : 'desc')}
                     title={sortOrder === 'desc' ? 'Oldest first' : 'Newest first'}
-                    className="flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 flex-shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 flex-shrink-0 transition-colors"
                 >
                     {sortOrder === 'desc' ? (
                         <><ArrowDown className="w-4 h-4" />{t('transactions.newestFirst')}</>

@@ -458,6 +458,7 @@ export default function Purchases() {
     const [dateTo, setDateTo] = useState('');
     const [sortOrder, setSortOrder] = useState('desc');
     const [paymentStatus, setPaymentStatus] = useState(''); // '' | 'paid' | 'pending' | 'unpaid'
+    const [filterPaymentMethod, setFilterPaymentMethod] = useState(''); // '' | 'cash' | 'bank_check' | 'tpe' | 'bank_transfer'
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [dateField, setDateField] = useState('transaction'); // 'transaction' | 'payment'
 
@@ -471,7 +472,8 @@ export default function Purchases() {
             const matchFrom = !dateFrom || ((dateField === 'payment' ? p.payment_date : p.transaction_date) || '') >= dateFrom;
             const matchTo = !dateTo || ((dateField === 'payment' ? p.payment_date : p.transaction_date) || '') <= dateTo;
             const matchStatus = !paymentStatus || getPaymentStatus(p.payment_date) === paymentStatus;
-            return matchSearch && matchFrom && matchTo && matchStatus;
+            const matchPaymentMethod = !filterPaymentMethod || (p.payment_method || '') === filterPaymentMethod;
+            return matchSearch && matchFrom && matchTo && matchStatus && matchPaymentMethod;
         });
         return [...filtered].sort((a, b) => {
             const field = dateField === 'payment' ? 'payment_date' : 'transaction_date';
@@ -479,12 +481,12 @@ export default function Purchases() {
             const db = b[field] || '';
             return sortOrder === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
         });
-    }, [purchases, search, dateFrom, dateTo, sortOrder, paymentStatus, dateField]);
+    }, [purchases, search, dateFrom, dateTo, sortOrder, paymentStatus, filterPaymentMethod, dateField]);
 
     const defaultFrom = currentYearStart();
-    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || paymentStatus || dateField !== 'transaction';
-    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (paymentStatus ? 1 : 0) + (dateField !== 'transaction' ? 1 : 0);
-    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setPaymentStatus(''); setDateField('transaction'); setShowFilterPanel(false); };
+    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || paymentStatus || filterPaymentMethod || dateField !== 'transaction';
+    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (paymentStatus ? 1 : 0) + (filterPaymentMethod ? 1 : 0) + (dateField !== 'transaction' ? 1 : 0);
+    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setPaymentStatus(''); setFilterPaymentMethod(''); setDateField('transaction'); setShowFilterPanel(false); };
 
     const totalPriceHT = filteredPurchases.reduce((sum, p) => sum + (Number(p.price_ht) || 0), 0);
     const totalTVA = filteredPurchases.reduce((sum, p) => sum + (Number(p.tva_20) || 0), 0);
@@ -840,6 +842,18 @@ export default function Purchases() {
                                             }`}>
                                             {t('purchases.unpaid')}
                                         </button>
+                                    </div>
+                                    {/* Payment Method filter */}
+                                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-1">{t('common.paymentMethod')}</p>
+                                    <div className="grid grid-cols-2 gap-1.5 mb-3">
+                                        {[{val:'cash',label:t('common.pmCash')},{val:'bank_check',label:t('common.pmBankCheck')},{val:'tpe',label:t('common.pmTPE')},{val:'bank_transfer',label:t('common.pmBankTransfer')}].map(pm => (
+                                            <button key={pm.val} onClick={() => setFilterPaymentMethod(filterPaymentMethod === pm.val ? '' : pm.val)}
+                                                className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                                    filterPaymentMethod === pm.val ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                                }`}>
+                                                {pm.label}
+                                            </button>
+                                        ))}
                                     </div>
                                     {/* Date field toggle */}
                                     <div className="mb-3">

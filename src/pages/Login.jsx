@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '../lib/supabase';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Mail, AlertCircle, Loader2, Globe } from 'lucide-react';
+import { Lock, Mail, AlertCircle, Loader2, Globe, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../hooks/useSettings';
 
@@ -20,6 +20,7 @@ export default function Login() {
     const location = useLocation();
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const logoSrc = logoUrl || '/assets/logo.svg';
     const displayName = companyName || 'Bootstrap Engines';
@@ -115,11 +116,21 @@ export default function Login() {
                                 </div>
                                 <input
                                     {...register('password')}
-                                    type="password"
-                                    className={`block w-full pl-10 sm:text-sm rounded-lg border focus:ring-primary focus:border-primary px-3 py-2 ${errors.password ? 'border-danger text-danger' : 'border-gray-300'
+                                    type={showPassword ? 'text' : 'password'}
+                                    className={`block w-full pl-10 pr-10 sm:text-sm rounded-lg border focus:ring-primary focus:border-primary px-3 py-2 ${errors.password ? 'border-danger text-danger' : 'border-gray-300'
                                         }`}
                                     placeholder="••••••••"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(p => !p)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                                    tabIndex={-1}
+                                >
+                                    {showPassword
+                                        ? <EyeOff className="h-4 w-4" />
+                                        : <Eye className="h-4 w-4" />}
+                                </button>
                             </div>
                             {errors.password && (
                                 <p className="mt-2 text-sm text-danger">{errors.password.message}</p>

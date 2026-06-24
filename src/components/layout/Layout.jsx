@@ -14,6 +14,7 @@ export default function Layout() {
     const { t, i18n } = useTranslation();
 
     const logoSrc = logoUrl || '/assets/logo.svg';
+    const logoIconSrc = '/assets/logo-icon.svg'; // compact square icon for sidebar
     const displayName = companyName || 'Bootstrap Engines';
 
     const toggleLang = () => {
@@ -60,10 +61,10 @@ export default function Layout() {
                     {/* Logo / Brand */}
                     <div className={`flex items-center h-16 flex-shrink-0 px-3 border-b border-white/10 ${collapsed ? 'justify-center' : 'gap-2.5'}`}>
                         <div className="bg-white p-1.5 rounded-lg flex-shrink-0">
-                            <img src={logoSrc} alt={`${displayName} Logo`} className="h-6 w-auto object-contain" />
+                            <img src={logoIconSrc} alt={`${displayName} icon`} className="h-7 w-7 object-contain" />
                         </div>
                         {!collapsed && (
-                            <span className="font-bold text-sm tracking-tight flex-1 truncate text-amber-400">{displayName}</span>
+                            <span className="font-bold text-sm tracking-tight flex-1 truncate text-gray-200">{displayName}</span>
                         )}
                         {!collapsed && (
                             <button
@@ -88,11 +89,10 @@ export default function Layout() {
                                         key={item.href}
                                         to={item.href}
                                         title={collapsed ? item.name : undefined}
-                                        className={`group flex items-center px-2.5 py-2 text-sm font-medium rounded-lg transition-all duration-150 relative ${
-                                            active
-                                                ? 'bg-white/10 text-white'
-                                                : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
-                                        } ${collapsed ? 'justify-center' : ''}`}
+                                        className={`group flex items-center px-2.5 py-2 text-sm font-medium rounded-lg transition-all duration-150 relative ${active
+                                            ? 'bg-white/10 text-white'
+                                            : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
+                                            } ${collapsed ? 'justify-center' : ''}`}
                                     >
                                         {/* Active left accent */}
                                         {active && (
@@ -175,9 +175,9 @@ export default function Layout() {
             <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-gray-900 text-white flex items-center justify-between h-14 px-4 shadow-sm border-b border-white/10">
                 <div className="flex items-center gap-2.5">
                     <div className="bg-white p-1.5 rounded-lg shadow-sm flex-shrink-0">
-                        <img src={logoSrc} alt={`${displayName} Logo`} className="h-5 w-auto object-contain" />
+                        <img src={logoIconSrc} alt={`${displayName} icon`} className="h-6 w-6 object-contain" />
                     </div>
-                    <span className="font-bold text-base tracking-tight text-amber-400">{displayName}</span>
+                    <span className="font-bold text-base tracking-tight text-gray-200">{displayName}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <button onClick={toggleLang} className="flex items-center gap-1 text-[10px] font-bold bg-white/10 hover:bg-white/20 px-2 py-1 rounded-md transition-colors text-gray-300">
@@ -213,9 +213,8 @@ export default function Layout() {
                                 const active = isActive(item.href);
                                 return (
                                     <Link key={item.href} to={item.href} onClick={() => setMobileMenuOpen(false)}
-                                        className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg relative transition-all ${
-                                            active ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
-                                        }`}>
+                                        className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg relative transition-all ${active ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
+                                            }`}>
                                         {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />}
                                         <Icon className={`mr-3 h-5 w-5 flex-shrink-0 ${active ? 'text-primary' : 'text-gray-500'}`} />
                                         {item.name}

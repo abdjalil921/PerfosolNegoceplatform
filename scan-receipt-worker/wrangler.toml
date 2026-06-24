@@ -1,0 +1,7 @@
+name = "scan-receipt"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+account_id = "6a7a2ae2e88ce554fa4ac7765e97ac3e"
+
+[ai]
+binding = "AI"

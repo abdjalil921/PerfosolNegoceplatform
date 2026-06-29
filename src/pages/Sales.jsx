@@ -460,12 +460,14 @@ function SaleModal({ companies, items, onClose, onSave, editData, suggestedRecei
             return sum + qty * up;
         }, 0);
         const r = (parseFloat(tvaPercent) || 0) / 100;
-        const retenAmt = ht * ((parseFloat(retenPercent) || 0) / 100);
+        const tvaAmt = ht * r;
+        const ttcBeforeDeduction = ht + tvaAmt;
+        const retenAmt = ttcBeforeDeduction * ((parseFloat(retenPercent) || 0) / 100);
         setForm(prev => ({
             ...prev,
             price_ht: ht ? ht.toFixed(2) : '',
-            tva_20: ht ? (ht * r).toFixed(2) : '',
-            total_ttc: ht ? (ht + ht * r - retenAmt).toFixed(2) : '',
+            tva_20: ht ? tvaAmt.toFixed(2) : '',
+            total_ttc: ht ? (ttcBeforeDeduction - retenAmt).toFixed(2) : '',
         }));
     };
 
@@ -518,7 +520,7 @@ function SaleModal({ companies, items, onClose, onSave, editData, suggestedRecei
             tva_20: parseFloat(form.tva_20) || null,
             total_ttc: parseFloat(form.total_ttc) || null,
             retenu_garantie_rate: parseFloat(form.retenu_garantie_rate) || 0,
-            retenu_garantie_amount: (parseFloat(form.price_ht) || 0) * ((parseFloat(form.retenu_garantie_rate) || 0) / 100),
+            retenu_garantie_amount: ((parseFloat(form.price_ht) || 0) + (parseFloat(form.tva_20) || 0)) * ((parseFloat(form.retenu_garantie_rate) || 0) / 100),
             payment_date: form.payment_date || null,
             payment_method: form.payment_method || null,
             include_tva: includeTva,
@@ -738,8 +740,9 @@ function SaleModal({ companies, items, onClose, onSave, editData, suggestedRecei
                                 <input type="text" readOnly
                                     value={(() => {
                                         const ht = parseFloat(form.price_ht) || 0;
+                                        const tva = parseFloat(form.tva_20) || 0;
                                         const r = parseFloat(form.retenu_garantie_rate) || 0;
-                                        const amt = ht * r / 100;
+                                        const amt = (ht + tva) * r / 100;
                                         return amt > 0 ? `${amt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MAD` : '';
                                     })()}
                                     placeholder="0.00"
@@ -995,7 +998,7 @@ export default function Sales() {
         const tvaAmt = s.tva_20 || 0;
         const tvaRate = s.tva_rate != null ? Math.round(s.tva_rate * 100) : 20;
         const retenRate = parseFloat(s.retenu_garantie_rate) || 0;
-        const retenAmt = parseFloat(s.retenu_garantie_amount) || (parseFloat(totalHT) * retenRate / 100);
+        const retenAmt = parseFloat(s.retenu_garantie_amount) || ((parseFloat(totalHT) + parseFloat(tvaAmt)) * retenRate / 100);
         const totalTTC = s.total_ttc || (parseFloat(totalHT) + parseFloat(tvaAmt) - retenAmt);
         const amountWords = numberToWordsFr(parseFloat(totalTTC));
         const pmLabel = { bank_transfer: 'Virement', bank_check: 'Chèque', cash: 'Espèces', tpe: 'TPE' }[s.payment_method] || (s.payment_method || '');
@@ -1105,28 +1108,41 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
               <td style="border:2px solid #000;padding:8px 10px;font-weight:700;text-align:center">TOTAL H.T</td>
               <td style="border:2px solid #000;padding:8px 10px;font-weight:700;text-align:right">${formatNum(totalHT)}</td>
             </tr>
-            ${retenRate > 0 ? `<tr>
-              <td colspan="3" style="border:none;background:#fff;padding:0"></td>
-              <td style="border:2px solid #000;padding:8px 10px;font-weight:700;text-align:center">RETENU DE GARANTIE ${retenRate}%</td>
-              <td style="border:2px solid #000;padding:8px 10px;font-weight:700;text-align:right">${formatNum(retenAmt)}</td>
-            </tr>` : ''}
             <tr>
               <td colspan="3" style="border:none;background:#fff;padding:0"></td>
               <td style="border:2px solid #000;padding:8px 10px;font-weight:700;text-align:center">T.V.A ${tvaRate}%</td>
               <td style="border:2px solid #000;padding:8px 10px;font-weight:700;text-align:right">${formatNum(tvaAmt)}</td>
             </tr>
+            ${retenRate > 0 ? `
+            <tr>
+              <td colspan="3" style="border:none;background:#fff;padding:0"></td>
+              <td style="border:2px solid #000;padding:8px 10px;font-weight:700;text-align:center">TOTAL TTC</td>
+              <td style="border:2px solid #000;padding:8px 10px;font-weight:700;text-align:right">${formatNum(parseFloat(totalHT) + parseFloat(tvaAmt))}</td>
+            </tr>
+            <tr>
+              <td colspan="3" style="border:none;background:#fff;padding:0"></td>
+              <td style="border:2px solid #000;padding:8px 10px;font-weight:700;text-align:center">RETENU DE GARANTIE ${retenRate}%</td>
+              <td style="border:2px solid #000;padding:8px 10px;font-weight:700;text-align:right">${formatNum(retenAmt)}</td>
+            </tr>
+            <tr>
+              <td colspan="3" style="border:none;background:#fff;padding:0"></td>
+              <td style="border:2px solid #000;padding:8px 10px;font-weight:900;text-align:center;font-size:14px">TOTAL PAIEMENT</td>
+              <td style="border:2px solid #000;padding:8px 10px;font-weight:900;text-align:right;font-size:14px">${formatNum(totalTTC)}</td>
+            </tr>
+            ` : `
             <tr>
               <td colspan="3" style="border:none;background:#fff;padding:0"></td>
               <td style="border:2px solid #000;padding:8px 10px;font-weight:900;text-align:center;font-size:14px">TOTAL TTC</td>
               <td style="border:2px solid #000;padding:8px 10px;font-weight:900;text-align:right;font-size:14px">${formatNum(totalTTC)}</td>
             </tr>
+            `}
           </tbody>
         </table>
       </div>
       
       <!-- Amount in words -->
       <div class="bottom-words">
-        <p class="sentence">Arrêtée la présente facture à la somme TTC de :</p>
+        <p class="sentence">${retenRate > 0 ? 'Arrêtée la présente facture au total paiement de :' : 'Arrêtée la présente facture à la somme TTC de :'}</p>
         <p class="amount">${amountWords}</p>
       </div>
       
@@ -1151,7 +1167,6 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
       <div><strong>STE PERFORSOL NEGOCE SARL</strong> &middot; AU CAPITAL DE 100.000,00 dhs</div>
       <div>17 RUE DES ORANGERS RDC BUREAU N 3 AIN SEBAA CASABLANCA</div>
       <div>RC N°681103 &middot; CNSS N°6214111 &middot; PATENTE N°31504918 &middot; I.F N°66992998 &middot; ICE N°003747458000013</div>
-      <div>R.I.B 230787657816822102700054</div>
     </div>
   </div>
   <script>
@@ -1312,7 +1327,6 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
       <div><strong>STE PERFORSOL NEGOCE SARL</strong> &middot; AU CAPITAL DE 100.000,00 dhs</div>
       <div>17 RUE DES ORANGERS RDC BUREAU N 3 AIN SEBAA CASABLANCA</div>
       <div>RC N°681103 &middot; CNSS N°6214111 &middot; PATENTE N°31504918 &middot; I.F N°66992998 &middot; ICE N°003747458000013</div>
-      <div>R.I.B 230787657816822102700054</div>
     </div>
   </div>
   <script>

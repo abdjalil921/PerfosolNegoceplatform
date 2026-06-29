@@ -1134,7 +1134,6 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
       <div><strong>STE PERFORSOL NEGOCE SARL</strong> &middot; AU CAPITAL DE 100.000,00 dhs</div>
       <div>17 RUE DES ORANGERS RDC BUREAU N 3 AIN SEBAA CASABLANCA</div>
       <div>RC N°681103 &middot; CNSS N°6214111 &middot; PATENTE N°31504918 &middot; I.F N°66992998 &middot; ICE N°003747458000013</div>
-      <div>R.I.B 230787657816822102700054</div>
     </div>
   </div>
   <script>

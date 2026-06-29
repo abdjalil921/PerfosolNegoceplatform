@@ -1,6 +1,6 @@
-# 🪵 Meca Wood — Inventory & Business Management System
+# 🪵Perforsol Negoce  — Inventory & Business Management System
 
-A comprehensive, full-stack web application for managing inventory, sales, purchases, cash flow, and logistics for **Meca Wood**, a small-to-medium wood products business in Morocco. Built with React and powered by Supabase as its backend.
+
 
 ---
 
@@ -29,7 +29,7 @@ A comprehensive, full-stack web application for managing inventory, sales, purch
 
 ## Overview
 
-Meca Wood Inventory is a multi-user business management platform covering the full operational cycle of the business: from tracking raw materials in the warehouse, to recording sales invoices and purchase orders, managing cash and bank flows, computing VAT obligations, and tracking transport logistics — all in one place.
+Perforsol Negoce Inventory is a multi-user business management platform covering the full operational cycle of the business: from tracking raw materials in the warehouse, to recording sales invoices and purchase orders, managing cash and bank flows, computing VAT obligations, and tracking transport logistics — all in one place.
 
 ---
 

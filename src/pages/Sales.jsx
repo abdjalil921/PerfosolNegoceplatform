@@ -2,8 +2,9 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import HScrollWrapper from '../components/ui/HScrollWrapper';
 import {
-    TrendingUp, Plus, Building2, X, Trash2, Download, Printer,
-    ChevronDown, Loader2, AlertCircle, Pencil, Search, SlidersHorizontal, FileText, ArrowLeftRight
+    BadgePercent, Plus, Building2, X, Trash2, Download, Printer,
+    ChevronDown, Loader2, AlertCircle, Pencil, Search, SlidersHorizontal, FileText, ArrowLeftRight,
+    CheckCircle2, Clock, Undo2
 } from 'lucide-react';
 import { useClients } from '../hooks/useClients';
 import { useSales } from '../hooks/useSales';
@@ -540,7 +541,7 @@ function SaleModal({ companies, items, onClose, onSave, editData, suggestedRecei
                 <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl">
                     <div className="flex items-center gap-2">
                         <div className="bg-emerald-50 p-2 rounded-lg">
-                            <TrendingUp className="w-5 h-5 text-emerald-600" />
+                            <BadgePercent className="w-5 h-5 text-emerald-600" />
                         </div>
                         <h2 className="text-base font-semibold text-gray-900">
                             {isEdit ? t('sales.editSale') : t('sales.addSale')}
@@ -793,7 +794,7 @@ export default function Sales() {
     const { companyName } = useSettings();
     const displayName = companyName || 'Meca Wood';
     const { clients, loading: clientsLoading, addClient, updateClient, deleteClient } = useClients();
-    const { sales, loading: salesLoading, addSale, updateSale, deleteSale } = useSales();
+    const { sales, loading: salesLoading, addSale, updateSale, deleteSale, setSalePosted } = useSales();
     const { items } = useItems();
 
     const [showCompanyModal, setShowCompanyModal] = useState(false);
@@ -842,6 +843,7 @@ export default function Sales() {
     const [sortField, setSortField] = useState('date');
     const [paymentStatus, setPaymentStatus] = useState(''); // '' | 'paid' | 'pending' | 'unpaid'
     const [filterPaymentMethod, setFilterPaymentMethod] = useState(''); // '' | 'cash' | 'bank_check' | 'tpe' | 'bank_transfer'
+    const [postedFilter, setPostedFilter] = useState(''); // '' | 'posted' | 'unposted'
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [dateField, setDateField] = useState('transaction'); // 'transaction' | 'payment'
 
@@ -856,7 +858,8 @@ export default function Sales() {
             const matchTo = !dateTo || ((dateField === 'payment' ? s.payment_date : s.transaction_date) || '') <= dateTo;
             const matchStatus = !paymentStatus || getPaymentStatus(s.payment_date) === paymentStatus;
             const matchPaymentMethod = !filterPaymentMethod || (s.payment_method || '') === filterPaymentMethod;
-            return matchSearch && matchFrom && matchTo && matchStatus && matchPaymentMethod;
+            const matchPosted = !postedFilter || (postedFilter === 'posted' ? !!s.posted_to_accounting : !s.posted_to_accounting);
+            return matchSearch && matchFrom && matchTo && matchStatus && matchPaymentMethod && matchPosted;
         });
         return [...filtered].sort((a, b) => {
             if (sortField === 'receipt') {
@@ -869,16 +872,18 @@ export default function Sales() {
             const db = b[field] || '';
             return sortOrder === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
         });
-    }, [sales, search, dateFrom, dateTo, sortOrder, sortField, paymentStatus, filterPaymentMethod, dateField]);
+    }, [sales, search, dateFrom, dateTo, sortOrder, sortField, paymentStatus, filterPaymentMethod, dateField, postedFilter]);
 
     const defaultFrom = currentYearStart();
-    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || sortField !== 'date' || paymentStatus || filterPaymentMethod || dateField !== 'transaction';
-    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (sortField !== 'date' ? 1 : 0) + (paymentStatus ? 1 : 0) + (filterPaymentMethod ? 1 : 0) + (dateField !== 'transaction' ? 1 : 0);
-    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setSortField('date'); setPaymentStatus(''); setFilterPaymentMethod(''); setDateField('transaction'); setShowFilterPanel(false); };
+    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || sortField !== 'date' || paymentStatus || filterPaymentMethod || dateField !== 'transaction' || postedFilter;
+    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (sortField !== 'date' ? 1 : 0) + (paymentStatus ? 1 : 0) + (filterPaymentMethod ? 1 : 0) + (dateField !== 'transaction' ? 1 : 0) + (postedFilter ? 1 : 0);
+    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setSortField('date'); setPaymentStatus(''); setFilterPaymentMethod(''); setDateField('transaction'); setPostedFilter(''); setShowFilterPanel(false); };
 
     const totalPriceHT = filteredSales.reduce((sum, s) => sum + (Number(s.price_ht) || 0), 0);
     const totalTVA = filteredSales.reduce((sum, s) => sum + (Number(s.tva_20) || 0), 0);
     const totalTTC = filteredSales.reduce((sum, s) => sum + (Number(s.total_ttc) || 0), 0);
+    const postedCount = filteredSales.filter(s => s.posted_to_accounting).length;
+    const unpostedCount = filteredSales.length - postedCount;
 
     /* ── Auto-increment Receipt Number ── */
     const nextReceiptNumber = useMemo(() => {
@@ -897,6 +902,15 @@ export default function Sales() {
 
     const { profile } = useAuth();
     const isComptable = profile?.role === 'comptable';
+    const canTogglePosted = profile?.role === 'comptable' || profile?.role === 'admin';
+    const isComptableRole = profile?.role === 'comptable';
+    const [postingId, setPostingId] = useState(null);
+    const handleTogglePosted = async (s) => {
+        setPostingId(s.id);
+        const result = await setSalePosted(s.id, !s.posted_to_accounting);
+        setPostingId(null);
+        if (!result.success) alert(result.error || t('sales.postedToggleFailed') || 'Could not update the status. Please try again.');
+    };
     const [companySearch, setCompanySearch] = useState('');
     const filteredClients = useMemo(() => {
         const q = companySearch.toLowerCase();
@@ -916,11 +930,13 @@ export default function Sales() {
             t('sales.transactionDate'), t('sales.company'), 'IF', 'ICE',
             t('sales.receiptNumber'), t('sales.itemSold'),
             t('sales.priceHT'), t('sales.tva20'), t('sales.totalTTC'), t('sales.paymentDate'),
+            t('sales.postedStatus') || 'Comptabilisé',
         ];
         const rows = filteredSales.map(s => [
             s.transaction_date || '', s.company_name || '', s.if_tax || '', s.ice || '',
             s.receipt_number || '', s.item_sold || '',
             s.price_ht || '', s.tva_20 || '', s.total_ttc || '', s.payment_date || '',
+            s.posted_to_accounting ? (t('sales.posted') || 'Comptabilisé') : (t('sales.notPosted') || 'Non comptabilisé'),
         ]);
         const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -1486,7 +1502,7 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
-                        <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-emerald-600" />
+                        <BadgePercent className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-emerald-600" />
                         {t('sales.title')}
                     </h1>
                     <p className="mt-1 text-sm text-gray-500">{t('sales.subtitle')}</p>
@@ -1518,22 +1534,24 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
 
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200">
-                <button onClick={() => setActiveTab('sales')}
-                    className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sales' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-                    {t('sales.tabSales')}
-                    <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-xs ml-1.5">{filteredSales.length}/{sales.length}</span>
-                </button>
-                <button onClick={() => setActiveTab('devis')}
-                    className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === 'devis' ? 'border-violet-600 text-violet-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-                    {t('devis.tabDevis')}
-                    <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-xs ml-1.5">{devis.length}</span>
-                </button>
-                <button onClick={() => setActiveTab('companies')}
-                    className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === 'companies' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-                    {t('sales.tabCompanies')}
-                    <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-xs ml-1.5">{clients.length}</span>
-                </button>
+            <div className="border-b border-gray-200 overflow-x-auto scrollbar-none whitespace-nowrap">
+                <div className="flex -mb-px">
+                    <button onClick={() => setActiveTab('sales')}
+                        className={`flex-shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sales' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                        {t('sales.tabSales')}
+                        <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-xs ml-1.5">{filteredSales.length}/{sales.length}</span>
+                    </button>
+                    <button onClick={() => setActiveTab('devis')}
+                        className={`flex-shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === 'devis' ? 'border-violet-600 text-violet-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                        {t('devis.tabDevis')}
+                        <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-xs ml-1.5">{devis.length}</span>
+                    </button>
+                    <button onClick={() => setActiveTab('companies')}
+                        className={`flex-shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === 'companies' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                        {t('sales.tabCompanies')}
+                        <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-xs ml-1.5">{clients.length}</span>
+                    </button>
+                </div>
             </div>
 
             {/* ── Devis Tab ── */}
@@ -1639,8 +1657,8 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
             {activeTab === 'sales' && (
                 <div className="space-y-3">
                     {/* Totals Quick Stats */}
-                    <div className="grid grid-cols-3 gap-3">
-                        <div className="rounded-xl border border-t-2 border-gray-200 p-4 bg-gray-50">
+                    <div className="flex overflow-x-auto gap-3 scrollbar-none pb-1 sm:grid sm:grid-cols-3">
+                        <div className="rounded-xl border border-t-2 border-gray-200 p-4 bg-gray-50 min-w-[240px] flex-shrink-0 sm:min-w-0 flex-1">
                             <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1.5">
                                 <span className="inline-block w-[7px] h-[7px] rounded-full bg-gray-400 flex-shrink-0"></span>
                                 {t('sales.priceHT')}
@@ -1648,20 +1666,44 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                             <p className="text-xl font-bold font-mono text-gray-800">{fmt(totalPriceHT)} <span className="text-sm font-normal text-gray-400">MAD</span></p>
                             <p className="text-xs text-gray-400 mt-0.5">{filteredSales.length} vente(s)</p>
                         </div>
-                        <div className="rounded-xl border border-orange-100 border-t-2 p-4 bg-orange-50" style={{ borderTopColor: '#E8610A' }}>
+                        <div className="rounded-xl border border-orange-100 border-t-2 p-4 bg-orange-50 min-w-[240px] flex-shrink-0 sm:min-w-0 flex-1" style={{ borderTopColor: '#E8610A' }}>
                             <p className="text-xs font-semibold uppercase tracking-wider text-orange-600 mb-1 flex items-center gap-1.5">
                                 <span className="inline-block w-[7px] h-[7px] rounded-full flex-shrink-0" style={{ backgroundColor: '#E8610A' }}></span>
                                 {t('sales.tva20')}
                             </p>
                             <p className="text-xl font-bold font-mono text-orange-700">{fmt(totalTVA)} <span className="text-sm font-normal text-orange-400">MAD</span></p>
                         </div>
-                        <div className="rounded-xl border border-emerald-100 border-t-2 border-t-emerald-500 p-4 bg-emerald-50">
+                        <div className="rounded-xl border border-emerald-100 border-t-2 border-t-emerald-500 p-4 bg-emerald-50 min-w-[240px] flex-shrink-0 sm:min-w-0 flex-1">
                             <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600 mb-1 flex items-center gap-1.5">
                                 <span className="inline-block w-[7px] h-[7px] rounded-full bg-emerald-500 flex-shrink-0"></span>
                                 Total TTC
                             </p>
                             <p className="text-xl font-bold font-mono text-emerald-700">{fmt(totalTTC)} <span className="text-sm font-normal text-emerald-400">MAD</span></p>
                             <p className="text-xs text-gray-400 mt-0.5">Toutes taxes comprises</p>
+                        </div>
+                    </div>
+                    {/* Accounting Posted Quick Stats */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                        <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 sm:p-5 flex items-center gap-4">
+                            <div className="bg-gray-50 text-gray-600 p-3 rounded-xl flex-shrink-0"><FileText className="w-6 h-6" /></div>
+                            <div className="min-w-0">
+                                <span className="text-xs font-semibold text-gray-400 block uppercase tracking-wider">{t('sales.totalInvoices')}</span>
+                                <h3 className="text-base sm:text-lg font-bold font-mono text-gray-800 mt-1">{filteredSales.length}</h3>
+                            </div>
+                        </div>
+                        <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 sm:p-5 flex items-center gap-4">
+                            <div className="bg-emerald-50 text-emerald-600 p-3 rounded-xl flex-shrink-0"><CheckCircle2 className="w-6 h-6" /></div>
+                            <div className="min-w-0">
+                                <span className="text-xs font-semibold text-gray-400 block uppercase tracking-wider">{t('sales.postedCount')}</span>
+                                <h3 className="text-base sm:text-lg font-bold font-mono text-emerald-700 mt-1">{postedCount}</h3>
+                            </div>
+                        </div>
+                        <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 sm:p-5 flex items-center gap-4">
+                            <div className="bg-amber-50 text-amber-600 p-3 rounded-xl flex-shrink-0"><Clock className="w-6 h-6" /></div>
+                            <div className="min-w-0">
+                                <span className="text-xs font-semibold text-gray-400 block uppercase tracking-wider">{t('sales.unpostedCount')}</span>
+                                <h3 className="text-base sm:text-lg font-bold font-mono text-amber-700 mt-1">{unpostedCount}</h3>
+                            </div>
                         </div>
                     </div>
                     {/* Filter bar */}
@@ -1744,6 +1786,22 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                             {t('sales.unpaid')}
                                         </button>
                                     </div>
+                                    {/* Posted to accounting filter */}
+                                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-1">{t('sales.postedStatus')}</p>
+                                    <div className="grid grid-cols-2 gap-1.5 mb-3">
+                                        <button onClick={() => setPostedFilter(postedFilter === 'posted' ? '' : 'posted')}
+                                            className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                                postedFilter === 'posted' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                            }`}>
+                                            {t('sales.posted')}
+                                        </button>
+                                        <button onClick={() => setPostedFilter(postedFilter === 'unposted' ? '' : 'unposted')}
+                                            className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                                postedFilter === 'unposted' ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                            }`}>
+                                            {t('sales.notPosted')}
+                                        </button>
+                                    </div>
                                     {/* Payment Method filter */}
                                     <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-1">{t('common.paymentMethod')}</p>
                                     <div className="grid grid-cols-2 gap-1.5 mb-3">
@@ -1820,7 +1878,7 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                         <div className="p-10 text-center text-sm text-gray-500">{t('common.loading')}</div>
                     ) : filteredSales.length === 0 ? (
                         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-12 text-center">
-                            <TrendingUp className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                            <BadgePercent className="w-10 h-10 text-gray-200 mx-auto mb-3" />
                             <p className="text-sm font-medium text-gray-500">
                                 {hasFilters ? t('sales.noResults') : t('sales.noSales')}
                             </p>
@@ -1886,6 +1944,23 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                             <span className="text-xs text-gray-400">{fmtDate(s.transaction_date)}</span>
                                             <PaymentBadge payment_date={s.payment_date} fmtDate={fmtDate} />
                                         </div>
+                                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${
+                                                s.posted_to_accounting ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-gray-100 text-gray-500 border-gray-200'
+                                            }`}>
+                                                {s.posted_to_accounting ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                                {s.posted_to_accounting ? t('sales.posted') : t('sales.notPosted')}
+                                            </span>
+                                            {canTogglePosted && (
+                                                <button onClick={() => handleTogglePosted(s)} disabled={postingId === s.id}
+                                                    className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-md transition-colors disabled:opacity-40 ${
+                                                        s.posted_to_accounting ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'
+                                                    }`}>
+                                                    {postingId === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (s.posted_to_accounting ? <Undo2 className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />)}
+                                                    {s.posted_to_accounting ? t('sales.undoPosted') : t('sales.markPosted')}
+                                                </button>
+                                            )}
+                                        </div>
                                         {(s.if_tax || s.ice) && (
                                             <div className="mt-1.5 flex gap-3 text-xs text-gray-400">
                                                 {s.if_tax && <span>IF: <span className="font-mono text-gray-500">{s.if_tax}</span></span>}
@@ -1904,6 +1979,7 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                             <tr>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.transactionDate')}</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.company')}</th>
+                                                {isComptableRole && <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.postedStatus')}</th>}
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.receiptNumber')}</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.itemSold')}</th>
                                                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.priceHT')}</th>
@@ -1911,6 +1987,7 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">Total TTC</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.paymentDate')}</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('common.paymentMethod')}</th>
+                                                {!isComptableRole && <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.postedStatus')}</th>}
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">IF</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">ICE</th>
                                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sales.printInvoice')}</th>
@@ -1921,10 +1998,32 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                             {filteredSales.map((s, idx) => {
                                                 const status = getPaymentStatus(s.payment_date);
                                                 const rowAccent = status === 'paid' ? 'border-l-[3px] border-l-green-600' : status === 'unpaid' ? 'border-l-[3px] border-l-orange-500' : status === 'pending' ? 'border-l-[3px] border-l-blue-500' : '';
+                                                const postedCell = (
+                                                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                                                        <div className="flex items-center justify-center gap-1">
+                                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${
+                                                                s.posted_to_accounting ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-gray-100 text-gray-500 border-gray-200'
+                                                            }`}>
+                                                                {s.posted_to_accounting ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                                                {s.posted_to_accounting ? t('sales.posted') : t('sales.notPosted')}
+                                                            </span>
+                                                            {canTogglePosted && (
+                                                                <button onClick={() => handleTogglePosted(s)} disabled={postingId === s.id}
+                                                                    title={s.posted_to_accounting ? t('sales.undoPosted') : t('sales.markPosted')}
+                                                                    className={`p-1 rounded-md transition-colors disabled:opacity-40 ${
+                                                                        s.posted_to_accounting ? 'text-gray-300 hover:text-amber-600 hover:bg-amber-50' : 'text-gray-300 hover:text-emerald-600 hover:bg-emerald-50'
+                                                                    }`}>
+                                                                    {postingId === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (s.posted_to_accounting ? <Undo2 className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />)}
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                );
                                                 return (
                                                 <tr key={s.id} className={`hover:bg-gray-50 transition-colors ${rowAccent} ${idx < filteredSales.length - 1 ? 'border-b border-gray-100' : ''}`}>
                                                     <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap tabular-nums">{fmtDate(s.transaction_date)}</td>
                                                     <td className="px-4 py-3 text-sm font-medium text-primary whitespace-nowrap">{s.company_name || '—'}</td>
+                                                    {isComptableRole && postedCell}
                                                     <td className="px-4 py-3 text-sm font-mono text-gray-400 whitespace-nowrap">{s.receipt_number || '—'}</td>
                                                     <td className="px-4 py-3 text-sm text-gray-400 max-w-[200px]">
                                                         {s.line_items?.length ? s.line_items.map((li, i) => (
@@ -1944,6 +2043,7 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                                             </span>
                                                         ) : '—'}
                                                     </td>
+                                                    {!isComptableRole && postedCell}
                                                     <td className="px-4 py-3 text-sm text-gray-400 font-mono whitespace-nowrap">{s.if_tax || '—'}</td>
                                                     <td className="px-4 py-3 text-sm text-gray-400 font-mono whitespace-nowrap">{s.ice || '—'}</td>
                                                     <td className="px-4 py-3 text-center">

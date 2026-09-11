@@ -171,9 +171,19 @@ export const usePurchases = () => {
         return { success: false, error: error?.message }
     }
 
+    /* ── setPurchasePosted ────────────────────────────── */
+    // Comptable/admin only (enforced server-side) — mark or unmark an invoice
+    // as re-keyed into the accountant's own system. Reversible.
+    const setPurchasePosted = async (id, posted) => {
+        const { data, error } = await supabase.rpc('set_purchase_posted', { p_id: id, p_posted: posted })
+        if (error) return { success: false, error: error.message }
+        setPurchases(prev => prev.map(p => p.id === id ? { ...p, ...data } : p))
+        return { success: true, data }
+    }
+
     useEffect(() => {
         fetchPurchases()
     }, [fetchPurchases])
 
-    return { purchases, loading, addPurchase, updatePurchase, deletePurchase, refetch: fetchPurchases }
+    return { purchases, loading, addPurchase, updatePurchase, deletePurchase, setPurchasePosted, refetch: fetchPurchases }
 }

@@ -1,6 +1,7 @@
 {
     "nav": {
-        "dashboard": "Stoque",
+        "dashboard": "Tableau de bord",
+        "inventory": "Stock & Inventaire",
         "transactions": "Transactions",
         "reports": "Rapports",
         "pricing": "Prix",
@@ -327,7 +328,16 @@
         "duplicateReceipt": "Un achat avec ce numéro de facture existe déjà.",
         "includeTva": "Inclure dans la déclaration TVA",
         "includeTvaOn": "Cet achat sera ajouté au tableau TVA dès que la date de paiement et le montant TVA sont renseignés.",
-        "includeTvaOff": "Cet achat ne sera pas inclus dans le tableau TVA."
+        "includeTvaOff": "Cet achat ne sera pas inclus dans le tableau TVA.",
+        "postedStatus": "Comptabilisé",
+        "posted": "Comptabilisé",
+        "notPosted": "Non comptabilisé",
+        "totalInvoices": "Total factures",
+        "postedCount": "Comptabilisé",
+        "unpostedCount": "Non comptabilisé",
+        "markPosted": "Marquer comptabilisé",
+        "undoPosted": "Annuler",
+        "postedToggleFailed": "Impossible de mettre à jour le statut. Veuillez réessayer."
     },
     "sales": {
         "title": "Ventes",
@@ -401,7 +411,16 @@
         "duplicateReceipt": "Une vente avec ce numéro de facture existe déjà.",
         "includeTva": "Inclure dans la déclaration TVA",
         "includeTvaOn": "Cette vente sera ajoutée au tableau TVA dès que la date de paiement et le montant TVA sont renseignés.",
-        "includeTvaOff": "Cette vente ne sera pas incluse dans le tableau TVA."
+        "includeTvaOff": "Cette vente ne sera pas incluse dans le tableau TVA.",
+        "postedStatus": "Comptabilisé",
+        "posted": "Comptabilisé",
+        "notPosted": "Non comptabilisé",
+        "totalInvoices": "Total factures",
+        "postedCount": "Comptabilisé",
+        "unpostedCount": "Non comptabilisé",
+        "markPosted": "Marquer comptabilisé",
+        "undoPosted": "Annuler",
+        "postedToggleFailed": "Impossible de mettre à jour le statut. Veuillez réessayer."
     },
     "devis": {
         "tabDevis": "Devis",
@@ -597,5 +616,40 @@
         "saveFailed": "Erreur lors de la sauvegarde. Veuillez réessayer.",
         "paid": "Payé",
         "unpaid": "Non payé"
+    },
+    "finance": {
+        "title": "Tableau de Bord Financier",
+        "revenue": "Chiffre d'Affaires (Ventes)",
+        "expenses": "Achats & Dépenses",
+        "netProfit": "Bénéfice Net",
+        "profitMargin": "Marge Bénéficiaire",
+        "caisseBalance": "Solde Caisse",
+        "bankBalance": "Solde Banque",
+        "totalLiquidity": "Liquidités Totales",
+        "tvaSummary": "Déclaration de TVA",
+        "collectedTva": "TVA Collectée (Ventes)",
+        "deductibleTva": "TVA Déductible (Achats)",
+        "tvaNet": "TVA Net à Payer",
+        "tvaCredit": "Crédit de TVA",
+        "recentTx": "Flux de Trésorerie Récent",
+        "salesVsPurchases": "Évolution Mensuelle : Ventes vs Achats",
+        "netCashFlow": "Flux de Trésorerie Net Mensuel",
+        "paymentMethods": "Répartition des Modes de Paiement",
+        "cash": "Espèces",
+        "bankTransfer": "Virement Bancaire",
+        "check": "Chèque",
+        "other": "Autre",
+        "customRange": "Période Personnalisée",
+        "custom": "Personnalisé",
+        "filter": "Filtrer",
+        "startDate": "Date de Début",
+        "endDate": "Date de Fin",
+        "thisMonth": "Ce Mois",
+        "last3Months": "3 Derniers Mois",
+        "thisYear": "Cette Année",
+        "allTime": "Tout Historique",
+        "gross": "HT",
+        "taxIncl": "TTC",
+        "tva": "TVA"
     }
 }

@@ -1,6 +1,7 @@
 {
     "nav": {
-        "dashboard": "Stock",
+        "dashboard": "Dashboard",
+        "inventory": "Stock & Inventory",
         "transactions": "Transactions",
         "reports": "Reports",
         "pricing": "Prices",
@@ -327,7 +328,16 @@
         "duplicateReceipt": "A purchase with this receipt number already exists.",
         "includeTva": "Include in VAT Declaration",
         "includeTvaOn": "This purchase will be added to the VAT table once the payment date and VAT amount are set.",
-        "includeTvaOff": "This purchase will not be included in the VAT declaration."
+        "includeTvaOff": "This purchase will not be included in the VAT declaration.",
+        "postedStatus": "Posted to accounting",
+        "posted": "Posted",
+        "notPosted": "Not entered",
+        "totalInvoices": "Total invoices",
+        "postedCount": "Posted",
+        "unpostedCount": "Not yet entered",
+        "markPosted": "Mark posted",
+        "undoPosted": "Undo",
+        "postedToggleFailed": "Could not update the status. Please try again."
     },
     "sales": {
         "title": "Sales",
@@ -401,7 +411,16 @@
         "duplicateReceipt": "A sale with this receipt number already exists.",
         "includeTva": "Include in VAT Declaration",
         "includeTvaOn": "This sale will be added to the VAT table once the payment date and VAT amount are set.",
-        "includeTvaOff": "This sale will not be included in the VAT declaration."
+        "includeTvaOff": "This sale will not be included in the VAT declaration.",
+        "postedStatus": "Posted to accounting",
+        "posted": "Posted",
+        "notPosted": "Not entered",
+        "totalInvoices": "Total invoices",
+        "postedCount": "Posted",
+        "unpostedCount": "Not yet entered",
+        "markPosted": "Mark posted",
+        "undoPosted": "Undo",
+        "postedToggleFailed": "Could not update the status. Please try again."
     },
     "devis": {
         "tabDevis": "Quotes",
@@ -597,5 +616,40 @@
         "saveFailed": "Failed to save. Please try again.",
         "paid": "Paid",
         "unpaid": "Unpaid"
+    },
+    "finance": {
+        "title": "Financial Dashboard",
+        "revenue": "Revenue (Sales)",
+        "expenses": "Purchases & Expenses",
+        "netProfit": "Net Profit",
+        "profitMargin": "Profit Margin",
+        "caisseBalance": "Cash Balance",
+        "bankBalance": "Bank Balance",
+        "totalLiquidity": "Total Liquidity",
+        "tvaSummary": "VAT Statement",
+        "collectedTva": "Collected VAT (Sales)",
+        "deductibleTva": "Deductible VAT (Purchases)",
+        "tvaNet": "Net VAT to Pay",
+        "tvaCredit": "VAT Credit",
+        "recentTx": "Recent Cash Flow",
+        "salesVsPurchases": "Monthly Income vs Expense",
+        "netCashFlow": "Monthly Net Cash Flow",
+        "paymentMethods": "Payment Methods Distribution",
+        "cash": "Cash",
+        "bankTransfer": "Bank Transfer",
+        "check": "Check",
+        "other": "Other",
+        "customRange": "Custom Date Range",
+        "custom": "Custom",
+        "filter": "Filter",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "thisMonth": "This Month",
+        "last3Months": "Last 3 Months",
+        "thisYear": "This Year",
+        "allTime": "All Time",
+        "gross": "HT",
+        "taxIncl": "TTC",
+        "tva": "VAT"
     }
 }

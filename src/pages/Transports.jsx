@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import HScrollWrapper from '../components/ui/HScrollWrapper';
 import {
-    Truck, Plus, X, Trash2, Printer,
+    Route, Plus, X, Trash2, Printer,
     Loader2, AlertCircle, Pencil, Search,
     ChevronDown, SlidersHorizontal, MapPin, Fuel
 } from 'lucide-react';
@@ -67,7 +67,7 @@ function RouteModal({ onClose, onSave, editData }) {
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
                     <div className="flex items-center gap-2">
                         <div className="bg-cyan-50 p-2 rounded-lg">
-                            <Truck className="w-5 h-5 text-cyan-600" />
+                            <Route className="w-5 h-5 text-cyan-600" />
                         </div>
                         <h2 className="text-base font-semibold text-gray-900">
                             {isEdit ? t('transports.editRoute') : t('transports.addRoute')}
@@ -308,7 +308,7 @@ export default function Transports() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-600" />
+                        <Route className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-600" />
                         {t('transports.title')}
                     </h1>
                     <p className="mt-1 text-sm text-gray-500">{t('transports.subtitle')}</p>
@@ -420,7 +420,7 @@ export default function Transports() {
                 <div className="p-12 text-center text-sm text-gray-400">{t('common.loading')}</div>
             ) : filtered.length === 0 ? (
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-12 text-center">
-                    <Truck className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                    <Route className="w-10 h-10 text-gray-200 mx-auto mb-3" />
                     <p className="text-sm font-medium text-gray-500">
                         {hasFilters ? t('transports.noResults') : t('transports.noRoutes')}
                     </p>

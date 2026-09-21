@@ -26,13 +26,12 @@ export default function Layout() {
     const isComptable = profile?.role === 'comptable';
 
     const allNavigation = [
-        { name: t('nav.transactions'), href: '/transactions', icon: ArrowLeftRight },
-        { name: t('nav.reports'), href: '/reports', icon: BarChart2 },
+        { name: t('nav.dashboard'), href: '/', icon: LayoutDashboard },
+        { name: t('nav.inventory'), href: '/inventory', icon: Package },
         { name: t('nav.purchases'), href: '/purchases', icon: ShoppingCart },
         { name: t('nav.sales'), href: '/sales', icon: TrendingUp },
         { name: t('nav.bank'), href: '/bank', icon: Landmark },
         { name: t('nav.caisse'), href: '/caisse', icon: Wallet },
-        { name: t('nav.dashboard'), href: '/', icon: Package },
         { name: t('nav.tva'), href: '/tva', icon: Percent },
         { name: t('nav.transports'), href: '/transports', icon: Truck },
     ];

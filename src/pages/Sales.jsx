@@ -4,8 +4,9 @@ import HScrollWrapper from '../components/ui/HScrollWrapper';
 import {
     BadgePercent, Plus, Building2, X, Trash2, Download, Printer,
     ChevronDown, Loader2, AlertCircle, Pencil, Search, SlidersHorizontal, FileText, ArrowLeftRight,
-    CheckCircle2, Clock, Undo2
+    CheckCircle2, Clock, Undo2, AlertTriangle
 } from 'lucide-react';
+import PostedBadge from '../components/shared/PostedBadge';
 import { useClients } from '../hooks/useClients';
 import { useSales } from '../hooks/useSales';
 import { useAuth } from '../hooks/useAuth';
@@ -858,7 +859,11 @@ export default function Sales() {
             const matchTo = !dateTo || ((dateField === 'payment' ? s.payment_date : s.transaction_date) || '') <= dateTo;
             const matchStatus = !paymentStatus || getPaymentStatus(s.payment_date) === paymentStatus;
             const matchPaymentMethod = !filterPaymentMethod || (s.payment_method || '') === filterPaymentMethod;
-            const matchPosted = !postedFilter || (postedFilter === 'posted' ? !!s.posted_to_accounting : !s.posted_to_accounting);
+            const matchPosted = !postedFilter || (
+                postedFilter === 'posted' ? !!s.posted_to_accounting :
+                postedFilter === 'stale' ? !!s.posted_stale :
+                !s.posted_to_accounting
+            );
             return matchSearch && matchFrom && matchTo && matchStatus && matchPaymentMethod && matchPosted;
         });
         return [...filtered].sort((a, b) => {
@@ -883,7 +888,8 @@ export default function Sales() {
     const totalTVA = filteredSales.reduce((sum, s) => sum + (Number(s.tva_20) || 0), 0);
     const totalTTC = filteredSales.reduce((sum, s) => sum + (Number(s.total_ttc) || 0), 0);
     const postedCount = filteredSales.filter(s => s.posted_to_accounting).length;
-    const unpostedCount = filteredSales.length - postedCount;
+    const staleCount = filteredSales.filter(s => s.posted_stale).length;
+    const unpostedCount = filteredSales.length - postedCount - staleCount;
 
     /* ── Auto-increment Receipt Number ── */
     const nextReceiptNumber = useMemo(() => {
@@ -902,7 +908,9 @@ export default function Sales() {
 
     const { profile } = useAuth();
     const isComptable = profile?.role === 'comptable';
-    const canTogglePosted = profile?.role === 'comptable' || profile?.role === 'admin';
+    // Refinement 1: only the comptable may flip the posted status.
+    // Admin (and everyone else) sees it but cannot toggle it.
+    const canTogglePosted = profile?.role === 'comptable';
     const isComptableRole = profile?.role === 'comptable';
     const [postingId, setPostingId] = useState(null);
     const handleTogglePosted = async (s) => {
@@ -936,7 +944,7 @@ export default function Sales() {
             s.transaction_date || '', s.company_name || '', s.if_tax || '', s.ice || '',
             s.receipt_number || '', s.item_sold || '',
             s.price_ht || '', s.tva_20 || '', s.total_ttc || '', s.payment_date || '',
-            s.posted_to_accounting ? (t('sales.posted') || 'Comptabilisé') : (t('sales.notPosted') || 'Non comptabilisé'),
+            s.posted_to_accounting ? (t('sales.posted') || 'Comptabilisé') : s.posted_stale ? (t('sales.postedEdited') || 'Modifié — à ressaisir') : (t('sales.notPosted') || 'Non comptabilisé'),
         ]);
         const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -1683,7 +1691,7 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                         </div>
                     </div>
                     {/* Accounting Posted Quick Stats */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                         <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 sm:p-5 flex items-center gap-4">
                             <div className="bg-gray-50 text-gray-600 p-3 rounded-xl flex-shrink-0"><FileText className="w-6 h-6" /></div>
                             <div className="min-w-0">
@@ -1703,6 +1711,13 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                             <div className="min-w-0">
                                 <span className="text-xs font-semibold text-gray-400 block uppercase tracking-wider">{t('sales.unpostedCount')}</span>
                                 <h3 className="text-base sm:text-lg font-bold font-mono text-amber-700 mt-1">{unpostedCount}</h3>
+                            </div>
+                        </div>
+                        <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 sm:p-5 flex items-center gap-4">
+                            <div className="bg-orange-50 text-orange-600 p-3 rounded-xl flex-shrink-0"><AlertTriangle className="w-6 h-6" /></div>
+                            <div className="min-w-0">
+                                <span className="text-xs font-semibold text-gray-400 block uppercase tracking-wider">{t('sales.staleCount')}</span>
+                                <h3 className="text-base sm:text-lg font-bold font-mono text-orange-700 mt-1">{staleCount}</h3>
                             </div>
                         </div>
                     </div>
@@ -1788,12 +1803,18 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                     </div>
                                     {/* Posted to accounting filter */}
                                     <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-1">{t('sales.postedStatus')}</p>
-                                    <div className="grid grid-cols-2 gap-1.5 mb-3">
+                                    <div className="grid grid-cols-3 gap-1.5 mb-3">
                                         <button onClick={() => setPostedFilter(postedFilter === 'posted' ? '' : 'posted')}
                                             className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
                                                 postedFilter === 'posted' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                                             }`}>
                                             {t('sales.posted')}
+                                        </button>
+                                        <button onClick={() => setPostedFilter(postedFilter === 'stale' ? '' : 'stale')}
+                                            className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                                postedFilter === 'stale' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                            }`}>
+                                            {t('sales.postedEdited')}
                                         </button>
                                         <button onClick={() => setPostedFilter(postedFilter === 'unposted' ? '' : 'unposted')}
                                             className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
@@ -1945,12 +1966,7 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                             <PaymentBadge payment_date={s.payment_date} fmtDate={fmtDate} />
                                         </div>
                                         <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
-                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${
-                                                s.posted_to_accounting ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-gray-100 text-gray-500 border-gray-200'
-                                            }`}>
-                                                {s.posted_to_accounting ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                                                {s.posted_to_accounting ? t('sales.posted') : t('sales.notPosted')}
-                                            </span>
+                                            <PostedBadge t={t} ns="sales" posted={s.posted_to_accounting} stale={s.posted_stale} />
                                             {canTogglePosted && (
                                                 <button onClick={() => handleTogglePosted(s)} disabled={postingId === s.id}
                                                     className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-md transition-colors disabled:opacity-40 ${
@@ -2001,12 +2017,7 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                                 const postedCell = (
                                                     <td className="px-4 py-3 text-center whitespace-nowrap">
                                                         <div className="flex items-center justify-center gap-1">
-                                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${
-                                                                s.posted_to_accounting ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-gray-100 text-gray-500 border-gray-200'
-                                                            }`}>
-                                                                {s.posted_to_accounting ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                                                                {s.posted_to_accounting ? t('sales.posted') : t('sales.notPosted')}
-                                                            </span>
+                                                            <PostedBadge t={t} ns="sales" posted={s.posted_to_accounting} stale={s.posted_stale} />
                                                             {canTogglePosted && (
                                                                 <button onClick={() => handleTogglePosted(s)} disabled={postingId === s.id}
                                                                     title={s.posted_to_accounting ? t('sales.undoPosted') : t('sales.markPosted')}

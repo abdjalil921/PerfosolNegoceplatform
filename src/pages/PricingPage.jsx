@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useItems } from '../hooks/useItems';
 import { useSettings } from '../hooks/useSettings';
 import { useTranslation } from 'react-i18next';
-import { Tag, Search, TrendingUp, TrendingDown, Printer } from 'lucide-react';
+import { BadgePercent, Search, TrendingUp, TrendingDown, Printer } from 'lucide-react';
 
 export default function PricingPage() {
     const { t } = useTranslation();
@@ -76,7 +76,7 @@ export default function PricingPage() {
             {/* Header */}
             <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
-                    <Tag className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-primary" />
+                    <BadgePercent className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-primary" />
                     {t('pricing.title')}
                 </h1>
                 <p className="mt-1 text-sm text-gray-500">{t('pricing.subtitle')}</p>

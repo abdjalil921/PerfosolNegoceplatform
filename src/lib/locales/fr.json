@@ -332,9 +332,11 @@
         "postedStatus": "Comptabilisé",
         "posted": "Comptabilisé",
         "notPosted": "Non comptabilisé",
+        "postedEdited": "Modifié — à ressaisir",
         "totalInvoices": "Total factures",
         "postedCount": "Comptabilisé",
         "unpostedCount": "Non comptabilisé",
+        "staleCount": "Modifié — à ressaisir",
         "markPosted": "Marquer comptabilisé",
         "undoPosted": "Annuler",
         "postedToggleFailed": "Impossible de mettre à jour le statut. Veuillez réessayer."
@@ -415,9 +417,11 @@
         "postedStatus": "Comptabilisé",
         "posted": "Comptabilisé",
         "notPosted": "Non comptabilisé",
+        "postedEdited": "Modifié — à ressaisir",
         "totalInvoices": "Total factures",
         "postedCount": "Comptabilisé",
         "unpostedCount": "Non comptabilisé",
+        "staleCount": "Modifié — à ressaisir",
         "markPosted": "Marquer comptabilisé",
         "undoPosted": "Annuler",
         "postedToggleFailed": "Impossible de mettre à jour le statut. Veuillez réessayer."

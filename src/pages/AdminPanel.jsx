@@ -3,7 +3,7 @@ import { useProfiles } from '../hooks/useProfiles';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import {
-    Shield, User, Users, Loader2,
+    User, Users, Loader2,
     ShieldCheck, X, UserPlus, AlertCircle, CheckCircle2, Trash2, KeyRound, Eye, EyeOff
 } from 'lucide-react';
 import { formatDate } from '../lib/utils';
@@ -467,7 +467,7 @@ export default function AdminPanel() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                        <Shield className="w-6 h-6 mr-2 text-primary" />
+                        <ShieldCheck className="w-6 h-6 mr-2 text-primary" />
                         {t('admin.title')}
                     </h1>
                     <p className="mt-1 text-sm text-gray-500">{t('admin.subtitle')}</p>

@@ -5,9 +5,8 @@ import Login from './pages/Login';
 import ResetPassword from './pages/ResetPassword';
 import UpdatePassword from './pages/UpdatePassword';
 import Dashboard from './pages/Dashboard';
-import Transactions from './pages/Transactions';
+import FinanceDashboard from './pages/FinanceDashboard';
 import AdminPanel from './pages/AdminPanel';
-import Reports from './pages/Reports';
 import Profile from './pages/Profile';
 import PricingPage from './pages/PricingPage';
 import Purchases from './pages/Purchases';
@@ -58,9 +57,8 @@ function App() {
             <Layout />
           </ProtectedRoute>
         }>
-          <Route index element={<Dashboard />} />
-          <Route path="transactions" element={<Transactions />} />
-          <Route path="reports" element={<Reports />} />
+          <Route index element={<FinanceDashboard />} />
+          <Route path="inventory" element={<Dashboard />} />
           <Route path="pricing" element={<PricingPage />} />
           <Route path="purchases" element={<Purchases />} />
           <Route path="sales" element={<Sales />} />

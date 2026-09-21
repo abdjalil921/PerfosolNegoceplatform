@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import HScrollWrapper from '../components/ui/HScrollWrapper';
 import {
-    Percent, Plus, X, Trash2, Download, Printer,
+    Calculator, Plus, X, Trash2, Download, Printer,
     Loader2, AlertCircle, Pencil, Search,
     ChevronDown, SlidersHorizontal
 } from 'lucide-react';
@@ -83,7 +83,7 @@ function TVAModal({ onClose, onSave, editData, clients, companies }) {
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                         <div className="bg-amber-50 p-2 rounded-lg">
-                            <Percent className="w-5 h-5 text-amber-600" />
+                            <Calculator className="w-5 h-5 text-amber-600" />
                         </div>
                         <h2 className="text-base font-semibold text-gray-900">
                             {isEdit ? t('tva.editTransaction') : t('tva.addTransaction')}
@@ -385,7 +385,7 @@ export default function TVA() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        <Percent className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
+                        <Calculator className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
                         {t('tva.title')}
                     </h1>
                     <p className="mt-1 text-sm text-gray-500">{t('tva.subtitle')}</p>
@@ -516,7 +516,7 @@ export default function TVA() {
                 <div className="p-12 text-center text-sm text-gray-400">{t('common.loading')}</div>
             ) : rowCount === 0 ? (
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-12 text-center">
-                    <Percent className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                    <Calculator className="w-10 h-10 text-gray-200 mx-auto mb-3" />
                     <p className="text-sm font-medium text-gray-500">{hasFilters ? t('tva.noResults') : t('tva.noTransactions')}</p>
                     <p className="text-xs text-gray-400 mt-1">{hasFilters ? t('tva.noResultsDesc') : t('tva.noTransactionsDesc')}</p>
                 </div>

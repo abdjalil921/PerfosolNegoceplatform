@@ -112,7 +112,7 @@ export const usePurchases = () => {
 
         const { data: current } = await supabase
             .from('purchases')
-            .select('line_items, stock_tx_id')
+            .select('line_items, stock_tx_id, posted_to_accounting')
             .eq('id', id)
             .single();
 
@@ -135,9 +135,22 @@ export const usePurchases = () => {
         });
         const firstTxId = txRefs[0]?.stock_tx_id || null;
 
+        const updatePayload = {
+            ...purchaseData,
+            stock_tx_id: firstTxId,
+            line_items: updatedLineItems,
+        };
+
+        if (current?.posted_to_accounting) {
+            updatePayload.posted_to_accounting = false;
+            updatePayload.posted_at = null;
+            updatePayload.posted_by = null;
+            updatePayload.posted_stale = true;
+        }
+
         const { data, error } = await supabase
             .from('purchases')
-            .update({ ...purchaseData, stock_tx_id: firstTxId, line_items: updatedLineItems })
+            .update(updatePayload)
             .eq('id', id)
             .select()
 

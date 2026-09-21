@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import HScrollWrapper from '../components/ui/HScrollWrapper';
 import {
-    Wallet, Plus, X, Trash2, Download, Printer,
+    Coins, Plus, X, Trash2, Download, Printer,
     Loader2, AlertCircle, Pencil, Search,
     ChevronDown, SlidersHorizontal, TrendingUp, TrendingDown
 } from 'lucide-react';
@@ -63,7 +63,7 @@ function TransactionModal({ onClose, onSave, editData }) {
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                         <div className="bg-violet-50 p-2 rounded-lg">
-                            <Wallet className="w-5 h-5 text-violet-600" />
+                            <Coins className="w-5 h-5 text-violet-600" />
                         </div>
                         <h2 className="text-base font-semibold text-gray-900">
                             {isEdit ? t('caisse.editTransaction') : t('caisse.addTransaction')}
@@ -369,7 +369,7 @@ export default function Caisse() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        <Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600" />
+                        <Coins className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600" />
                         {t('caisse.title')}
                     </h1>
                     <p className="mt-1 text-sm text-gray-500">{t('caisse.subtitle')}</p>
@@ -580,7 +580,7 @@ export default function Caisse() {
                 <div className="p-12 text-center text-sm text-gray-400">{t('common.loading')}</div>
             ) : filtered.length === 0 ? (
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-12 text-center">
-                    <Wallet className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                    <Coins className="w-10 h-10 text-gray-200 mx-auto mb-3" />
                     <p className="text-sm font-medium text-gray-500">
                         {hasFilters ? t('caisse.noResults') : t('caisse.noTransactions')}
                     </p>

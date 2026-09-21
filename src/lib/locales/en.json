@@ -332,9 +332,11 @@
         "postedStatus": "Posted to accounting",
         "posted": "Posted",
         "notPosted": "Not entered",
+        "postedEdited": "Edited \u2014 needs re-entry",
         "totalInvoices": "Total invoices",
         "postedCount": "Posted",
         "unpostedCount": "Not yet entered",
+        "staleCount": "Edited \u2014 needs re-entry",
         "markPosted": "Mark posted",
         "undoPosted": "Undo",
         "postedToggleFailed": "Could not update the status. Please try again."
@@ -415,9 +417,11 @@
         "postedStatus": "Posted to accounting",
         "posted": "Posted",
         "notPosted": "Not entered",
+        "postedEdited": "Edited \u2014 needs re-entry",
         "totalInvoices": "Total invoices",
         "postedCount": "Posted",
         "unpostedCount": "Not yet entered",
+        "staleCount": "Edited \u2014 needs re-entry",
         "markPosted": "Mark posted",
         "undoPosted": "Undo",
         "postedToggleFailed": "Could not update the status. Please try again."

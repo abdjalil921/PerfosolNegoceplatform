@@ -24,7 +24,7 @@ function StockBar({ current, threshold }) {
     );
 }
 
-export default function Reports() {
+export default function Reports({ isEmbedded = false }) {
     const { t } = useTranslation();
     const { items, loading: itemsLoading } = useItems();
     const { transactions, loading: txLoading } = useTransactions();
@@ -111,28 +111,40 @@ export default function Reports() {
 
     return (
         <div className="space-y-8">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                        <BarChart2 className="w-6 h-6 mr-2 text-primary" />
-                        {t('reports.title')}
-                    </h1>
-                    <p className="mt-1 text-sm text-gray-500">{t('reports.subtitle')}</p>
+            {!isEmbedded && (
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+                            <BarChart2 className="w-6 h-6 mr-2 text-primary" />
+                            {t('reports.title')}
+                        </h1>
+                        <p className="mt-1 text-sm text-gray-500">{t('reports.subtitle')}</p>
+                    </div>
+                    <button
+                        onClick={exportStockCSV}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                    >
+                        <Download className="w-4 h-4 mr-2" />
+                        {t('reports.exportCsv')}
+                    </button>
                 </div>
-                <button
-                    onClick={exportStockCSV}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                >
-                    <Download className="w-4 h-4 mr-2" />
-                    {t('reports.exportCsv')}
-                </button>
-            </div>
+            )}
 
             {/* Date filter */}
-            <div className="bg-white p-4 shadow-sm rounded-lg border border-gray-100">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{t('reports.filterByDate')}</p>
-                <DateRangeFilter onChange={setDateRange} />
+            <div className="bg-white p-4 shadow-sm rounded-lg border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex-1 w-full">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{t('reports.filterByDate')}</p>
+                    <DateRangeFilter onChange={setDateRange} />
+                </div>
+                {isEmbedded && (
+                    <button
+                        onClick={exportStockCSV}
+                        className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors sm:self-end"
+                    >
+                        <Download className="w-4 h-4 mr-2" />
+                        {t('reports.exportCsv')}
+                    </button>
+                )}
             </div>
 
             {/* Summary Stats */}

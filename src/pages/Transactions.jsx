@@ -6,7 +6,7 @@ import DateRangeFilter from '../components/ui/DateRangeFilter';
 import { Download, Search, Loader2, ArrowLeftRight, ArrowUp, ArrowDown } from 'lucide-react';
 import { filterByDateRange } from '../lib/dateUtils';
 
-export default function Transactions() {
+export default function Transactions({ isEmbedded = false }) {
     const { transactions, loading } = useTransactions();
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
@@ -61,30 +61,32 @@ export default function Transactions() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                        <ArrowLeftRight className="w-6 h-6 mr-2 text-primary" />
-                        {t('transactions.title')}
-                    </h1>
-                    <p className="mt-1 text-sm text-gray-500">
-                        {t('transactions.subtitle')}
-                        {filteredTransactions.length !== transactions.length && (
-                            <span className="ml-2 text-primary font-medium">
-                                ({filteredTransactions.length} of {transactions.length})
-                            </span>
-                        )}
-                    </p>
+            {!isEmbedded && (
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+                            <ArrowLeftRight className="w-6 h-6 mr-2 text-primary" />
+                            {t('transactions.title')}
+                        </h1>
+                        <p className="mt-1 text-sm text-gray-500">
+                            {t('transactions.subtitle')}
+                            {filteredTransactions.length !== transactions.length && (
+                                <span className="ml-2 text-primary font-medium">
+                                    ({filteredTransactions.length} of {transactions.length})
+                                </span>
+                            )}
+                        </p>
+                    </div>
+                    <button
+                        onClick={exportCSV}
+                        disabled={filteredTransactions.length === 0}
+                        className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        <Download className="w-4 h-4 mr-2" />
+                        {t('transactions.exportCsv')}
+                    </button>
                 </div>
-                <button
-                    onClick={exportCSV}
-                    disabled={filteredTransactions.length === 0}
-                    className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    <Download className="w-4 h-4 mr-2" />
-                    {t('transactions.exportCsv')}
-                </button>
-            </div>
+            )}
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -160,6 +162,16 @@ export default function Transactions() {
                         <><ArrowUp className="w-4 h-4" />{t('transactions.oldestFirst')}</>
                     )}
                 </button>
+                {isEmbedded && (
+                    <button
+                        onClick={exportCSV}
+                        disabled={filteredTransactions.length === 0}
+                        className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                    >
+                        <Download className="w-4 h-4 mr-2" />
+                        {t('transactions.exportCsv')}
+                    </button>
+                )}
             </div>
 
             <TransactionList transactions={filteredTransactions} />

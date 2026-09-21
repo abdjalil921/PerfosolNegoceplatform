@@ -4,9 +4,12 @@ import HScrollWrapper from '../components/ui/HScrollWrapper';
 import {
     ShoppingBag, Plus, Building2, X, Trash2, Download, Printer,
     ChevronDown, Loader2, AlertCircle, Pencil, Search, SlidersHorizontal,
-    ScanLine, Paperclip, FileText, CheckCircle2, Clock, Undo2, AlertTriangle
+    ScanLine, Paperclip, FileText, CheckCircle2, Clock, Undo2, AlertTriangle, BookOpen
 } from 'lucide-react';
 import PostedBadge from '../components/shared/PostedBadge';
+import SageAccountsModal from '../components/shared/SageAccountsModal';
+import SageKindBadge from '../components/shared/SageKindBadge';
+import { useSageCombos } from '../hooks/useSageCombos';
 import { useCompanies } from '../hooks/useCompanies';
 import { usePurchases } from '../hooks/usePurchases';
 import { useAuth } from '../hooks/useAuth';
@@ -30,7 +33,7 @@ const currentYearStart = () => `${new Date().getFullYear()}-01-01`;
 function CompanyModal({ onClose, onSave, editData }) {
     const { t } = useTranslation();
     const isEdit = Boolean(editData);
-    const [form, setForm] = useState({ name: editData?.name || '', if_tax: editData?.if_tax || '', ice: editData?.ice || '' });
+    const [form, setForm] = useState({ name: editData?.name || '', if_tax: editData?.if_tax || '', ice: editData?.ice || '', tiers_code: editData?.tiers_code || '' });
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
 
@@ -40,7 +43,13 @@ function CompanyModal({ onClose, onSave, editData }) {
         e.preventDefault();
         if (!form.name.trim()) { setError(t('purchases.companyNameRequired')); return; }
         setSaving(true);
-        const result = await onSave({ name: form.name.trim(), if_tax: form.if_tax.trim(), ice: form.ice.trim() });
+        // tiers_code is only sent when there is one to save (or one to clear), so a
+        // supplier can still be saved before the Sage migration is applied.
+        const tiers = form.tiers_code.trim();
+        const result = await onSave({
+            name: form.name.trim(), if_tax: form.if_tax.trim(), ice: form.ice.trim(),
+            ...((tiers || editData?.tiers_code) ? { tiers_code: tiers || null } : {}),
+        });
         setSaving(false);
         if (result.success) onClose();
         else setError(result.error || t('purchases.saveFailed'));
@@ -104,6 +113,17 @@ function CompanyModal({ onClose, onSave, editData }) {
                                 placeholder="000000000000000"
                             />
                         </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">{t('purchases.tiersCode')}</label>
+                        <input
+                            type="text"
+                            value={form.tiers_code}
+                            onChange={e => set('tiers_code', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            placeholder="FR001"
+                        />
+                        <p className="mt-1 text-[11px] text-gray-400">{t('purchases.tiersCodeHint')}</p>
                     </div>
 
                     <div className="flex justify-end gap-3 pt-2">
@@ -726,10 +746,14 @@ export default function Purchases() {
     const { companyName } = useSettings();
     const displayName = companyName || 'Meca Wood';
     const { companies, loading: companiesLoading, addCompany, updateCompany, deleteCompany } = useCompanies();
-    const { purchases, loading: purchasesLoading, addPurchase, updatePurchase, deletePurchase, setPurchasePosted } = usePurchases();
+    const { purchases, loading: purchasesLoading, addPurchase, updatePurchase, deletePurchase, setPurchasePosted, setPurchasesSageAccounts } = usePurchases();
     const { items, addItem } = useItems();
 
     const [showCompanyModal, setShowCompanyModal] = useState(false);
+    // Comptable only: the purchases whose Sage accounts are being entered in the
+    // popup (one row, or the bulk selection), and the bulk selection itself.
+    const [sageTarget, setSageTarget] = useState(null);
+    const [selectedIds, setSelectedIds] = useState(() => new Set());
     const [showPurchaseModal, setShowPurchaseModal] = useState(false);
     const [editingPurchase, setEditingPurchase] = useState(null);
     const [editingCompany, setEditingCompany] = useState(null);
@@ -818,6 +842,7 @@ export default function Purchases() {
     const [paymentStatus, setPaymentStatus] = useState(''); // '' | 'paid' | 'pending' | 'unpaid'
     const [filterPaymentMethod, setFilterPaymentMethod] = useState(''); // '' | 'cash' | 'bank_check' | 'tpe' | 'bank_transfer'
     const [postedFilter, setPostedFilter] = useState(''); // '' | 'posted' | 'unposted'
+    const [classFilter, setClassFilter] = useState(''); // '' | 'unclassified' (comptable: no Sage accounts yet)
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [dateField, setDateField] = useState('transaction'); // 'transaction' | 'payment'
 
@@ -837,7 +862,8 @@ export default function Purchases() {
                 postedFilter === 'stale' ? !!p.posted_stale :
                 !p.posted_to_accounting
             );
-            return matchSearch && matchFrom && matchTo && matchStatus && matchPaymentMethod && matchPosted;
+            const matchClass = !classFilter || !p.sage_kind;
+            return matchSearch && matchFrom && matchTo && matchStatus && matchPaymentMethod && matchPosted && matchClass;
         });
         return [...filtered].sort((a, b) => {
             const field = dateField === 'payment' ? 'payment_date' : 'transaction_date';
@@ -845,12 +871,12 @@ export default function Purchases() {
             const db = b[field] || '';
             return sortOrder === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
         });
-    }, [purchases, search, dateFrom, dateTo, sortOrder, paymentStatus, filterPaymentMethod, dateField, postedFilter]);
+    }, [purchases, search, dateFrom, dateTo, sortOrder, paymentStatus, filterPaymentMethod, dateField, postedFilter, classFilter]);
 
     const defaultFrom = currentYearStart();
-    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || paymentStatus || filterPaymentMethod || dateField !== 'transaction' || postedFilter;
-    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (paymentStatus ? 1 : 0) + (filterPaymentMethod ? 1 : 0) + (dateField !== 'transaction' ? 1 : 0) + (postedFilter ? 1 : 0);
-    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setPaymentStatus(''); setFilterPaymentMethod(''); setDateField('transaction'); setPostedFilter(''); setShowFilterPanel(false); };
+    const hasFilters = search || (dateFrom && dateFrom !== defaultFrom) || dateTo || sortOrder !== 'desc' || paymentStatus || filterPaymentMethod || dateField !== 'transaction' || postedFilter || classFilter;
+    const filterCount = ((dateFrom && dateFrom !== defaultFrom) ? 1 : 0) + (dateTo ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0) + (paymentStatus ? 1 : 0) + (filterPaymentMethod ? 1 : 0) + (dateField !== 'transaction' ? 1 : 0) + (postedFilter ? 1 : 0) + (classFilter ? 1 : 0);
+    const clearFilters = () => { setSearch(''); setDateFrom(currentYearStart()); setDateTo(''); setSortOrder('desc'); setPaymentStatus(''); setFilterPaymentMethod(''); setDateField('transaction'); setPostedFilter(''); setClassFilter(''); setShowFilterPanel(false); };
 
     const totalPriceHT = filteredPurchases.reduce((sum, p) => sum + (Number(p.price_ht) || 0), 0);
     const totalTVA = filteredPurchases.reduce((sum, p) => sum + (Number(p.tva_20) || 0), 0);
@@ -865,6 +891,17 @@ export default function Purchases() {
     // Admin (and everyone else) sees it but cannot toggle it.
     const canTogglePosted = profile?.role === 'comptable';
     const isComptableRole = profile?.role === 'comptable';
+
+    /* ── Comptable: Sage accounts (one invoice or the bulk selection) ── */
+    const { cfg: sageCfg, combos: sageCombos, remember: rememberCombo } = useSageCombos('purchase', isComptableRole);
+    const toggleSelected = (id) => setSelectedIds(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        return next;
+    });
+    const allShownSelected = filteredPurchases.length > 0 && filteredPurchases.every(p => selectedIds.has(p.id));
+    const toggleAllShown = () => setSelectedIds(allShownSelected ? new Set() : new Set(filteredPurchases.map(p => p.id)));
+    const selectedPurchases = purchases.filter(p => selectedIds.has(p.id));
     const [postingId, setPostingId] = useState(null);
     const handleTogglePosted = async (p) => {
         setPostingId(p.id);
@@ -1228,6 +1265,21 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                     }}
                 />
             )}
+            {sageTarget && (
+                <SageAccountsModal
+                    ns="purchases"
+                    invoices={sageTarget}
+                    cfg={sageCfg}
+                    combos={sageCombos}
+                    onSave={async (accounts) => {
+                        const result = await setPurchasesSageAccounts(sageTarget.map(p => p.id), accounts);
+                        if (result.success) setSelectedIds(new Set());
+                        return result;
+                    }}
+                    onRememberCombo={rememberCombo}
+                    onClose={() => setSageTarget(null)}
+                />
+            )}
             {/* BC Modals */}
             {showBCModal && (
                 <BonDeCommandeModal
@@ -1530,6 +1582,20 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                             {t('purchases.notPosted')}
                                         </button>
                                     </div>
+                                    {/* Comptable: invoices still without Sage accounts */}
+                                    {isComptableRole && (
+                                        <>
+                                            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-1">{t('sage.classification')}</p>
+                                            <div className="grid grid-cols-1 gap-1.5 mb-3">
+                                                <button onClick={() => setClassFilter(classFilter === 'unclassified' ? '' : 'unclassified')}
+                                                    className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                                                        classFilter === 'unclassified' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                                    }`}>
+                                                    {t('sage.toClassify')}
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
                                     {/* Payment Method filter */}
                                     <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-1">{t('common.paymentMethod')}</p>
                                     <div className="grid grid-cols-2 gap-1.5 mb-3">
@@ -1587,6 +1653,13 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                         {/* Export + Print */}
                         {filteredPurchases.length > 0 && (
                             <>
+                                {isComptableRole && selectedIds.size > 0 && (
+                                    <button onClick={() => setSageTarget(selectedPurchases)}
+                                        className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-emerald-700 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors whitespace-nowrap">
+                                        <BookOpen className="w-3.5 h-3.5" />
+                                        {t('sage.classifySelected', { count: selectedIds.size })}
+                                    </button>
+                                )}
                                 <button onClick={exportCSV}
                                     className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-600 border border-gray-300 bg-white hover:bg-gray-50 rounded-lg transition-colors whitespace-nowrap">
                                     <Download className="w-3.5 h-3.5" />
@@ -1673,6 +1746,13 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                                 </button>
                                             )}
                                         </div>
+                                        {isComptableRole && (
+                                            <div className="flex items-center justify-between mt-2">
+                                                <SageKindBadge t={t} kind={p.sage_kind} htAccount={p.sage_account_ht} onClick={() => setSageTarget([p])} />
+                                                <input type="checkbox" checked={selectedIds.has(p.id)} onChange={() => toggleSelected(p.id)}
+                                                    title={t('sage.selectRow')} className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500/30" />
+                                            </div>
+                                        )}
                                         {(p.if_tax || p.ice) && (
                                             <div className="mt-1.5 flex gap-3 text-xs text-gray-400">
                                                 {p.if_tax && <span>IF: <span className="font-mono text-gray-500">{p.if_tax}</span></span>}
@@ -1689,9 +1769,16 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                     <table className="min-w-full">
                                         <thead className="bg-gray-50">
                                             <tr>
+                                                {isComptableRole && (
+                                                    <th className="pl-4 pr-1 py-3 w-8">
+                                                        <input type="checkbox" checked={allShownSelected} onChange={toggleAllShown}
+                                                            title={t('sage.selectAll')} className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500/30" />
+                                                    </th>
+                                                )}
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('purchases.transactionDate')}</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('purchases.company')}</th>
                                                 {isComptableRole && <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wide">{t('purchases.postedStatus')}</th>}
+                                                {isComptableRole && <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wide">{t('sage.columnAccounts')}</th>}
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('purchases.receiptNumber')}</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{t('purchases.itemPurchased')}</th>
                                                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{t('purchases.priceHT')}</th>
@@ -1725,11 +1812,23 @@ ${isDownload ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/
                                                         </div>
                                                     </td>
                                                 );
+                                                const sageCell = (
+                                                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                                                        <SageKindBadge t={t} kind={p.sage_kind} htAccount={p.sage_account_ht} onClick={() => setSageTarget([p])} />
+                                                    </td>
+                                                );
                                                 return (
                                                 <tr key={p.id} className={`hover:bg-gray-50 transition-colors ${rowAccent} ${idx < filteredPurchases.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                                                    {isComptableRole && (
+                                                        <td className="pl-4 pr-1 py-3 w-8">
+                                                            <input type="checkbox" checked={selectedIds.has(p.id)} onChange={() => toggleSelected(p.id)}
+                                                                className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500/30" />
+                                                        </td>
+                                                    )}
                                                     <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap tabular-nums">{fmtDate(p.transaction_date)}</td>
                                                     <td className="px-4 py-3 text-sm font-medium text-primary whitespace-nowrap">{p.company_name || '—'}</td>
                                                     {isComptableRole && postedCell}
+                                                    {isComptableRole && sageCell}
                                                     <td className="px-4 py-3 text-sm font-mono text-gray-400 whitespace-nowrap">{p.receipt_number || '—'}</td>
                                                     <td className="px-4 py-3 text-sm text-gray-400 max-w-[200px]">
                                                         {p.line_items?.length ? p.line_items.map((li, i) => (

@@ -2,8 +2,9 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useSettings } from '../../hooks/useSettings';
 import { useTranslation } from 'react-i18next';
-import { Package, LayoutDashboard, ArrowLeftRight, BarChart2, Tag, ShoppingCart, TrendingUp, Wallet, Landmark, Percent, Settings, LogOut, Menu, X, Globe, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Package, LayoutDashboard, ArrowLeftRight, BarChart2, Tag, ShoppingCart, TrendingUp, Wallet, Landmark, Percent, Settings, LogOut, Menu, X, Globe, Truck, ChevronLeft, ChevronRight, BookOpen, Layers, Building2, FileSpreadsheet } from 'lucide-react';
 import { useState } from 'react';
+import { COMPTABLE_ONLY } from '../../lib/comptablePaths';
 
 export default function Layout() {
     const { user, profile, signOut } = useAuth();
@@ -34,6 +35,11 @@ export default function Layout() {
         { name: t('nav.caisse'), href: '/caisse', icon: Wallet },
         { name: t('nav.tva'), href: '/tva', icon: Percent },
         { name: t('nav.transports'), href: '/transports', icon: Truck },
+        // The comptable's own pages (hidden from everyone else, admin included)
+        { name: t('nav.comptableSettings'), href: '/comptable-settings', icon: FileSpreadsheet },
+        { name: t('nav.sageAchat'), href: '/sage/achat', icon: BookOpen },
+        { name: t('nav.sageAchatDivers'), href: '/sage/achat-divers', icon: Layers },
+        { name: t('nav.sageImmo'), href: '/sage/immobilisations', icon: Building2 },
     ];
 
     if (profile?.role === 'admin') {
@@ -41,12 +47,63 @@ export default function Layout() {
     }
 
     // Comptable can only see their allowed pages
-    const COMPTABLE_NAV = ['/purchases', '/sales', '/bank', '/caisse'];
+    const COMPTABLE_NAV = ['/purchases', '/sales', '/bank', '/caisse', ...COMPTABLE_ONLY];
     const navigation = isComptable
         ? allNavigation.filter(item => COMPTABLE_NAV.includes(item.href))
-        : allNavigation;
+        : allNavigation.filter(item => !COMPTABLE_ONLY.includes(item.href));
 
     const isActive = (path) => location.pathname === path;
+
+    // The three Sage journals hang under Purchases as an indented sub-menu.
+    // A child whose parent isn't in the sidebar is shown as a normal entry.
+    const NAV_CHILDREN = { '/purchases': ['/sage/achat', '/sage/achat-divers', '/sage/immobilisations'] };
+    const parentOf = Object.fromEntries(Object.entries(NAV_CHILDREN).flatMap(([parent, kids]) => kids.map(k => [k, parent])));
+    const visibleHrefs = new Set(navigation.map(item => item.href));
+    const navTree = navigation
+        .filter(item => !parentOf[item.href] || !visibleHrefs.has(parentOf[item.href]))
+        .map(item => ({
+            ...item,
+            children: (NAV_CHILDREN[item.href] || []).map(h => navigation.find(n => n.href === h)).filter(Boolean),
+        }));
+
+    const renderDesktopLink = (item, child) => {
+        const Icon = item.icon;
+        const active = isActive(item.href);
+        return (
+            <Link
+                key={item.href}
+                to={item.href}
+                title={collapsed ? item.name : undefined}
+                className={`group flex items-center rounded-lg transition-all duration-150 relative ${child ? 'px-2 py-1.5 text-[13px]' : 'px-2.5 py-2 text-sm'} font-medium ${active
+                    ? 'bg-white/10 text-white'
+                    : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
+                    } ${collapsed ? 'justify-center' : ''}`}
+            >
+                {active && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
+                )}
+                <Icon className={`flex-shrink-0 transition-colors ${active ? 'text-primary' : 'text-gray-500 group-hover:text-gray-300'} ${collapsed ? '' : (child ? 'mr-2' : 'mr-3')}`}
+                    style={child ? { width: '0.95rem', height: '0.95rem' } : { width: '1.125rem', height: '1.125rem' }} />
+                {!collapsed && (
+                    <span className="truncate">{item.name}</span>
+                )}
+            </Link>
+        );
+    };
+
+    const renderMobileLink = (item, child) => {
+        const Icon = item.icon;
+        const active = isActive(item.href);
+        return (
+            <Link key={item.href} to={item.href} onClick={() => setMobileMenuOpen(false)}
+                className={`group flex items-center ${child ? 'px-3 py-2 text-[13px]' : 'px-3 py-2.5 text-sm'} font-medium rounded-lg relative transition-all ${active ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
+                    }`}>
+                {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />}
+                <Icon className={`flex-shrink-0 ${child ? 'mr-2 h-4 w-4' : 'mr-3 h-5 w-5'} ${active ? 'text-primary' : 'text-gray-500'}`} />
+                {item.name}
+            </Link>
+        );
+    };
 
     const sidebarW = collapsed ? 'md:w-16' : 'md:w-64';
     const contentPl = collapsed ? 'md:pl-16' : 'md:pl-64';
@@ -80,30 +137,16 @@ export default function Layout() {
                     {/* Nav */}
                     <div className="flex-1 flex flex-col overflow-y-auto py-3">
                         <nav className="flex-1 px-2 space-y-0.5">
-                            {navigation.map((item) => {
-                                const Icon = item.icon;
-                                const active = isActive(item.href);
-                                return (
-                                    <Link
-                                        key={item.href}
-                                        to={item.href}
-                                        title={collapsed ? item.name : undefined}
-                                        className={`group flex items-center px-2.5 py-2 text-sm font-medium rounded-lg transition-all duration-150 relative ${active
-                                            ? 'bg-white/10 text-white'
-                                            : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
-                                            } ${collapsed ? 'justify-center' : ''}`}
-                                    >
-                                        {/* Active left accent */}
-                                        {active && (
-                                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
-                                        )}
-                                        <Icon className={`h-4.5 w-4.5 flex-shrink-0 transition-colors ${active ? 'text-primary' : 'text-gray-500 group-hover:text-gray-300'} ${collapsed ? '' : 'mr-3'}`} style={{ width: '1.125rem', height: '1.125rem' }} />
-                                        {!collapsed && (
-                                            <span className="truncate">{item.name}</span>
-                                        )}
-                                    </Link>
-                                );
-                            })}
+                            {navTree.map((item) => (
+                                <div key={item.href}>
+                                    {renderDesktopLink(item, false)}
+                                    {item.children.length > 0 && (
+                                        <div className={collapsed ? 'space-y-0.5 mt-0.5' : 'ml-[1.4rem] pl-2 border-l border-white/10 space-y-0.5 mt-0.5 mb-1'}>
+                                            {item.children.map(child => renderDesktopLink(child, true))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
                         </nav>
                     </div>
 
@@ -207,19 +250,16 @@ export default function Layout() {
                         </div>
 
                         <nav className="px-2 space-y-0.5">
-                            {navigation.map((item) => {
-                                const Icon = item.icon;
-                                const active = isActive(item.href);
-                                return (
-                                    <Link key={item.href} to={item.href} onClick={() => setMobileMenuOpen(false)}
-                                        className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg relative transition-all ${active ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
-                                            }`}>
-                                        {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />}
-                                        <Icon className={`mr-3 h-5 w-5 flex-shrink-0 ${active ? 'text-primary' : 'text-gray-500'}`} />
-                                        {item.name}
-                                    </Link>
-                                );
-                            })}
+                            {navTree.map((item) => (
+                                <div key={item.href}>
+                                    {renderMobileLink(item, false)}
+                                    {item.children.length > 0 && (
+                                        <div className="ml-[1.6rem] pl-2 border-l border-white/10 space-y-0.5 mt-0.5 mb-1">
+                                            {item.children.map(child => renderMobileLink(child, true))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
                         </nav>
 
                         <div className="px-4 mt-5">

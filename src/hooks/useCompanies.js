@@ -58,9 +58,18 @@ export const useCompanies = () => {
         return { success: false, error: error?.message }
     }
 
+    // Comptable only (enforced server-side; the comptable is read-only on
+    // suppliers otherwise) — the supplier's Sage "N° tiers" code, e.g. FR001.
+    const setCompanyTiersCode = async (id, code) => {
+        const { data, error } = await supabase.rpc('set_party_tiers_code', { p_table: 'companies', p_id: id, p_code: code })
+        if (error) return { success: false, error: error.message }
+        setCompanies(prev => prev.map(c => c.id === id ? { ...c, tiers_code: data } : c))
+        return { success: true }
+    }
+
     useEffect(() => {
         fetchCompanies()
     }, [fetchCompanies])
 
-    return { companies, loading, addCompany, updateCompany, deleteCompany, refetch: fetchCompanies }
+    return { companies, loading, addCompany, updateCompany, deleteCompany, setCompanyTiersCode, refetch: fetchCompanies }
 }

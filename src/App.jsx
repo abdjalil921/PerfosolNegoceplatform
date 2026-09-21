@@ -15,6 +15,8 @@ import Caisse from './pages/Caisse';
 import BankPayments from './pages/BankPayments';
 import TVA from './pages/TVA';
 import Transports from './pages/Transports';
+import ComptableSettings from './pages/ComptableSettings';
+import SageJournal from './pages/sage/SageJournal';
 import { useAuthInit } from './hooks/useAuth';
 import { useSettingsInit } from './hooks/useSettings';
 import { useEffect } from 'react';
@@ -66,6 +68,10 @@ function App() {
           <Route path="bank" element={<BankPayments />} />
           <Route path="tva" element={<TVA />} />
           <Route path="transports" element={<Transports />} />
+          <Route path="comptable-settings" element={<ComptableSettings />} />
+          <Route path="sage/achat" element={<SageJournal kind="ach" />} />
+          <Route path="sage/achat-divers" element={<SageJournal kind="achdiv" />} />
+          <Route path="sage/immobilisations" element={<SageJournal kind="immo" />} />
           <Route path="profile" element={<Profile />} />
           <Route path="admin" element={
             <ProtectedRoute requireAdmin={true}>

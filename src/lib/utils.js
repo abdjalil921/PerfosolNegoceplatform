@@ -41,3 +41,10 @@ export const getPaymentStatus = (payment_date) => {
     if (payment_date > today) return 'pending';
     return 'paid';
 };
+
+// Neutralise a cell that a spreadsheet/CSV reader could treat as a formula.
+export const sanitizeCsvCell = (val) => {
+    const s = String(val ?? '');
+    if (/^[=+\-@\t\r]/.test(s)) return "'" + s;
+    return s;
+};

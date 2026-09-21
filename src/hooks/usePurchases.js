@@ -194,9 +194,23 @@ export const usePurchases = () => {
         return { success: true, data }
     }
 
+    /* ── setPurchasesSageAccounts ──────────────────────── */
+    // Comptable only (enforced server-side) — the three Sage general-ledger
+    // accounts + the derived classification for one purchase or a bulk
+    // selection. All-blank clears them. Returns the updated rows.
+    const setPurchasesSageAccounts = async (ids, { ht, tva, ttc, kind }) => {
+        const { data, error } = await supabase.rpc('set_purchases_sage_accounts', {
+            p_ids: ids, p_ht: ht || null, p_tva: tva || null, p_ttc: ttc || null, p_kind: kind || null,
+        })
+        if (error) return { success: false, error: error.message }
+        const byId = new Map((data || []).map(r => [r.id, r]))
+        setPurchases(prev => prev.map(p => (byId.has(p.id) ? { ...p, ...byId.get(p.id) } : p)))
+        return { success: true, data }
+    }
+
     useEffect(() => {
         fetchPurchases()
     }, [fetchPurchases])
 
-    return { purchases, loading, addPurchase, updatePurchase, deletePurchase, setPurchasePosted, refetch: fetchPurchases }
+    return { purchases, loading, addPurchase, updatePurchase, deletePurchase, setPurchasePosted, setPurchasesSageAccounts, refetch: fetchPurchases }
 }
